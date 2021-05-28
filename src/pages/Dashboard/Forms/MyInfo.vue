@@ -1,0 +1,176 @@
+<template>
+  <div class="md-layout md-alignment-center-center">
+    <div class="md-layout-item md-size-40 md-small-size-100">
+      <md-card>
+        <md-card-header class="md-card-header-text md-card-header-green">
+          <div class="card-text">
+            <h4 class="title text-bold">내 정보</h4>
+          </div>
+        </md-card-header>
+
+        <md-card-content>
+          <div class="md-layout">
+            <md-field>
+              <label>아이디</label>
+              <md-input value="myIdSample" type="text" :disabled="true"></md-input>
+            </md-field>
+          </div>
+
+          <div class="md-layout">
+            <md-field>
+              <label>비밀번호</label>
+              <md-input v-model="password" type="password"></md-input>
+            </md-field>
+          </div>
+
+          <div class="md-layout">
+            <md-field>
+              <label>비밀번호 확인</label>
+              <md-input v-model="password2" type="password"></md-input>
+            </md-field>
+          </div>
+
+
+          <div class="md-layout">
+            <md-field>
+              <label>이름</label>
+              <md-input v-model="name" type="text"></md-input>
+            </md-field>
+          </div>
+
+          <div class="md-layout">
+            <md-field>
+              <label>연락처</label>
+              <md-input v-model="tel" type="text"></md-input>
+            </md-field>
+          </div>
+
+          <div class="md-layout">
+            <md-field>
+              <label>가입일</label>
+              <md-input value="2021-02-26 17:33" type="text" :disabled="true" />
+            </md-field>
+          </div>
+        </md-card-content>
+        <md-card-actions>
+          <md-button type="submit" class="md-success" @click.native="join">수정</md-button>
+        </md-card-actions>
+      </md-card>
+    </div>
+  </div>
+</template>
+<script>
+import Swal from "sweetalert2";
+import _ from "lodash";
+
+export default {
+  props: {
+    mode: {
+      type: String,
+      default: "SAVE"
+    },
+    item: {
+      type: Object
+    }
+  },
+  created() {
+    console.log(this.item);
+    if (!_.isEmpty(this.item)) {
+      this.id = this.item.id;
+      this.name = this.item.name;
+      this.role = this.item.role;
+      this.tel = this.item.tel;
+      this.master = this.item.master;
+      this.createDate = this.item.createDate;
+    }
+  },
+  data: () => ({
+    id: "",
+    name: "임대성",
+    password: "",
+    password2: "",
+    role: "0",
+    tel: "010-8753-0343",
+    master: "",
+    createDate: ""
+  }),
+  methods: {
+    join() {
+      Swal.fire({
+        title: `내 정보 수정 완료`,
+        text: "내 정보 수정이 완료되었습니다.",
+        confirmButtonClass: "md-button md-success",
+        type: "success"
+      }).then(() => {
+        this.$router.push({ path: "/list/contract" });
+      });
+    },
+    modify() {
+      Swal.fire({
+        title: `계정 수정 완료`,
+        text: "계정 수정이 완료되었습니다.",
+        confirmButtonClass: "md-button md-success",
+        type: "success"
+      }).then(() => {
+        this.$router.push({ path: "/list/user" });
+      });
+    }
+  }
+};
+</script>
+<style lang="scss" scoped>
+.md-card .md-card-actions {
+  border: none;
+}
+
+.md-inline-checkboxes {
+  display: inline-flex;
+
+  .md-checkbox {
+    margin-top: 15px !important;
+  }
+}
+
+.md-checkbox,
+.md-radio {
+  margin-top: 15px;
+  margin-bottom: 0.5rem;
+}
+
+.md-checkbox,
+.md-radio {
+  display: flex;
+}
+
+.md-radio .md-radio-container {
+  margin-left: 5px;
+  position: relative;
+  left: -3px;
+}
+
+.md-form-label + .md-layout-item .md-checkbox:not(:first-child),
+.md-form-label + .md-layout-item + .md-layout-item .md-radio:not(:first-child),
+.md-form-label + .md-layout-item .md-radio {
+  margin-top: 0;
+}
+
+.form-control-static {
+  margin-top: 6px;
+}
+
+.text-bold {
+  font-weight: 500 !important;
+}
+
+.not-modify {
+  display: flex;
+  align-items: flex-end;
+}
+
+.not-modify span{
+  font-weight: 400;
+}
+.md-small-size-100 {
+  text-align: left!important;
+}
+</style>
