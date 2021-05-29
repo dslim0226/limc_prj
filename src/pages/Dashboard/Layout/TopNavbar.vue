@@ -36,3 +36,13 @@ export default {
   }
 };
 </script>
+<style scoped>
+.md-toolbar {
+  display: flex;
+}
+@media screen and (min-width: 992px) {
+  .md-toolbar {
+    display: none;
+  }
+}
+</style>

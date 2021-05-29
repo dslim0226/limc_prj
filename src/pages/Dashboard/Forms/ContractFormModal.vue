@@ -1,8 +1,9 @@
 <template>
-  <modal v-if="open" @close="$emit('close')">
+  <modal v-if="open" @close="$emit('close')" class="modal-contract">
     <template slot="header">
-      <h4 class="modal-title" v-if="isSaveMode">계약 정보(등록)</h4>
-      <h4 class="modal-title" v-else-if="isModifyMode">계약 정보(수정)</h4>
+      <h4 class="modal-title">
+        계약 정보 {{(isSaveMode) ? '등록' : '수정'}}
+      </h4>
       <md-button
         class="md-simple md-just-icon md-round modal-default-button"
         @click="close"
@@ -23,7 +24,7 @@
         <md-field>
           <label>주소</label>
           <md-input v-model="addr" :disabled="true" type="text" />
-          <md-button class="md-primary md-dense" @click="kakaoMap">
+          <md-button class="md-default md-dense" @click="kakaoMap">
             <template>주소찾기</template>
           </md-button>
         </md-field>
@@ -51,7 +52,7 @@
         <md-field>
           <label>사진</label>
           <md-input :disabled="true" />
-          <md-button class="md-primary md-dense  md-fileinput">
+          <md-button class="md-default md-dense  md-fileinput">
             <template>찾아보기</template>
             <input
               multiple
@@ -69,7 +70,7 @@
         <md-field>
           <label>사업자등록증</label>
           <md-input :disabled="true" />
-          <md-button class="md-primary md-dense  md-fileinput">
+          <md-button class="md-default md-dense  md-fileinput">
             <template>찾아보기</template>
             <input
               multiple
@@ -87,7 +88,7 @@
         <md-field>
           <label>계약서</label>
           <md-input :disabled="true" />
-          <md-button class="md-primary md-dense  md-fileinput">
+          <md-button class="md-default md-dense  md-fileinput">
             <template>찾아보기</template>
             <input
               multiple
@@ -111,17 +112,24 @@
 
     <template slot="footer">
       <md-card-actions md-alignment="space-between">
-        <div></div>
+        <div>
+          <md-button
+            @click="close"
+            class="md-default md-dense"
+          >
+            닫기
+          </md-button>
+        </div>
         <div v-if="isSaveStatus || isSaveMode">
           <md-button
             @click="save"
-            class="md-success md-dense"
+            class="md-info md-dense"
           >
             중간저장
           </md-button>
           <md-button
             @click="send"
-            class="md-primary md-dense"
+            class="md-success md-dense"
           >
             신청
           </md-button>
@@ -133,7 +141,7 @@
             승인
           </md-button>
           <md-button
-            class="md-primary md-dense"
+            class="md-danger md-dense"
             @click.native="dis"
           >
             반려
@@ -141,7 +149,7 @@
         </div>
         <div v-else-if="isReSendStatus">
           <md-button
-            class="md-primary md-dense"
+            class="md-success md-dense"
           >
             재요청
           </md-button>

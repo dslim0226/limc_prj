@@ -2,27 +2,27 @@
   <div class="md-layout">
     <div class="md-layout-item md-size-100">
 
-      <md-card>
+      <md-card class="search-top">
         <md-card-header class="md-card-header-text md-card-header-green">
-          <div class="card-text">
-            <h4 class="title text-bold">계약 목록</h4>
+          <div class="card-icon">
+            <md-icon>search</md-icon>
           </div>
+          <h4 class="title">검색</h4>
         </md-card-header>
         <md-card-content>
           <div class="table-top">
             <div class="md-layout-item md-layout table-top-left">
-              <md-field class="md-layout-item md-large-size-15 md-small-size-45 md-xsmall-size-100 mr-5">
+              <md-field class="md-layout-item md-xsmall-size-100 md-size-20 mr-5">
                 <label for="filter">상태</label>
                 <md-select value="" name="filter" id="filter">
-                  <md-option value="0">중간저장</md-option>
+                  <!--                  <md-option value="0">중간저장</md-option>--> <!-- 중간저장은 자신만 보이도록 (내꺼+중간저장) -->
                   <md-option value="1">신청</md-option>
                   <md-option value="2">승인</md-option>
                   <md-option value="3">반려</md-option>
                   <md-option value="4">계약종료</md-option>
                 </md-select>
               </md-field>
-              <md-field class="md-layout-item md-large-size-20 md-small-size-45 md-xsmall-size-100"
-                        style="padding-right:0;">
+              <md-field class="md-layout-item md-xsmall-size-100 md-size-25">
                 <label>상호명</label>
                 <md-input v-model="search" />
                 <md-button class="md-icon-button">
@@ -30,10 +30,23 @@
                 </md-button>
               </md-field>
             </div>
-            <div class="table-top-left">
-              <md-button class="md-primary" @click="openModal({}, 'SAVE')">등록</md-button>
-            </div>
           </div>
+        </md-card-content>
+      </md-card>
+
+      <md-card>
+        <md-card-header class="md-card-header-text md-card-header-green">
+          <div class="card-icon">
+            <md-icon>assignment</md-icon>
+          </div>
+          <h4 class="title">
+            계약 목록
+            <div class="table-header-button">
+              <md-button class="md-success md-dense" @click="openModal({}, 'SAVE')">등록</md-button>
+            </div>
+          </h4>
+        </md-card-header>
+        <md-card-content>
           <md-table v-model="tableData" table-header-color="green">
             <md-table-row slot="md-table-row" slot-scope="{ item }">
               <md-table-cell md-label="상호명">{{ item.name }}</md-table-cell>
@@ -46,8 +59,8 @@
               <md-table-cell md-label="계약서">{{ item.contract }}</md-table-cell>
               <md-table-cell md-label="상태">{{ item.status }}</md-table-cell>
               <md-table-cell md-label="등록일">{{ item.createDate }}</md-table-cell>
-              <md-table-cell md-label="수정" style="">
-                <md-button class="md-primary md-fab md-icon-button" @click.native="openModal(item, 'MODIFY')">
+              <md-table-cell md-label="비고" style="">
+                <md-button class="md-info md-icon-button" @click.native="openModal(item, 'MODIFY')">
                   <md-icon>edit</md-icon>
                 </md-button>
               </md-table-cell>

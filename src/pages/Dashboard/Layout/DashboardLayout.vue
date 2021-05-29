@@ -152,4 +152,30 @@ $scaleSize: 0.95;
 .wrapper {
   overflow-x: hidden;
 }
+
+
+/* kokimin css 작업 */
+body, h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4 {
+  font-family: "Nanum Gothic","Roboto", "Helvetica", "Arial", sans-serif;
+ }
+.table-header-button{
+  position: absolute;
+  right: 20px;
+  top: -10px;
+}
+.search-top {
+  margin-top: 0px;
+}
+.modal-contract .modal-container{
+  max-width: 50%;
+}
+@media screen and (max-width: 992px) {
+  .search-top {
+    margin-top: 20px !important;
+  }
+  .modal-contract .modal-container{
+    max-width: 90%;
+  }
+}
+
 </style>
