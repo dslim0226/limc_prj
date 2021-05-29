@@ -11,7 +11,7 @@
             <slot name="body"></slot>
           </div>
 
-          <div class="modal-footer">
+          <div>
             <slot name="footer"></slot>
           </div>
         </div>

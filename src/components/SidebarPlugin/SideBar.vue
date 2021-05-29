@@ -127,4 +127,8 @@ export default {
     display: none;
   }
 }
+
+.sidebar-wrapper {
+  overflow-x: hidden!important;
+}
 </style>

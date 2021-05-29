@@ -28,7 +28,7 @@
               </md-field>
             </div>
             <div class="table-top-left">
-              <md-button class="md-primary" @click.native="goJoinPage()">등록</md-button>
+              <md-button class="md-primary"  @click="openModal({}, 'SAVE')">등록</md-button>
             </div>
           </div>
           <md-table v-model="tableData" table-header-color="green">
@@ -40,7 +40,7 @@
               <md-table-cell md-label="관리자">{{ item.master }}</md-table-cell>
               <md-table-cell md-label="가입일">{{ item.createDate }}</md-table-cell>
               <md-table-cell md-label="수정" style="">
-                <md-button class="md-primary md-fab md-icon-button" @click.native="goModifyPage(item)">
+                <md-button class="md-primary md-fab md-icon-button" @click.native="openModal(item, 'MODIFY')">
                   <md-icon>edit</md-icon>
                 </md-button>
               </md-table-cell>
@@ -54,14 +54,21 @@
         </md-card-content>
       </md-card>
     </div>
+    <UserFormModal
+      @close="close"
+      :item="modalItem"
+      :mode="modalMode"
+      :open="open"
+    />
   </div>
 </template>
 <script>
 import Pagination from "@/components/Pagination";
 import { users } from "@/pages/Dashboard/Tables/users";
+import UserFormModal from "@/pages/Dashboard/Forms/ValidationForms/UserFormModal";
 
 export default {
-  components: { Pagination },
+  components: { UserFormModal, Pagination },
   created() {
     this.tableData = users;
   },
@@ -70,15 +77,22 @@ export default {
       currentPage: 1,
       perPage: 10,
       total: 50,
-      tableData: []
+      tableData: [],
+      open: false,
+      modalMode: "SAVE",
+      modalItem: {}
     };
   },
   methods: {
-    goJoinPage() {
-      this.$router.push({ name: "user", params: { mode: "SAVE" } });
+    openModal(item, mode) {
+      this.open = true;
+      this.modalItem = item;
+      this.modalMode = mode;
     },
-    goModifyPage(item) {
-      this.$router.push({ name: "user", params: { mode: "MODIFY", item: item } });
+    close() {
+      this.open = false;
+      this.modalMode = "SAVE";
+      this.modalItem = {};
     }
   }
 };

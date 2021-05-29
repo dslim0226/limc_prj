@@ -5,7 +5,7 @@
         <md-card-header class="md-card-header-text md-card-header-green">
           <div class="card-text">
             <h4 class="title text-bold" v-if="isSaveMode">계약 정보(등록)</h4>
-            <h4 class="title text-bold" v-else-if="isModifyMode">계약 정보(수정)</h4>
+            <h4 class="title text-bold" v-else-if="isModifyMode">계약 정보(등록)</h4>
           </div>
         </md-card-header>
 
@@ -195,7 +195,8 @@ export default {
     business: [],
     contract: [],
     status: "",
-    textarea: "이 곳에 반려사유가 출력됩니다."
+    textarea: "이 곳에 반려사유가 출력됩니다.",
+
   }),
   computed: {
     isSaveMode() {

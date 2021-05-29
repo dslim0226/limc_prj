@@ -7,7 +7,21 @@ import UserTables from "@/pages/Dashboard/Tables/UserTables.vue";
 import ContractForm from "@/pages/Dashboard/Forms/ContractForm";
 import ContractTables from "@/pages/Dashboard/Tables/ContractTables";
 import MyInfo from "@/pages/Dashboard/Forms/MyInfo";
+import Login from "@/pages/Dashboard/Pages/Login";
+import AuthLayout from "@/pages/Dashboard/Pages/AuthLayout";
 
+let AuthMenu = {
+  path: "/",
+  component: AuthLayout,
+  name: "auth",
+  children: [
+    {
+      path: "/login",
+      name: "login",
+      component: Login
+    }
+  ]
+};
 
 let tablesMenu = {
   path: "/",
@@ -53,6 +67,7 @@ const routes = [
     name: "Home"
   },
   tablesMenu,
+  AuthMenu
 ];
 
 export default routes;

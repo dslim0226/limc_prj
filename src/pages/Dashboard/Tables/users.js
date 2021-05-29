@@ -95,7 +95,7 @@ export const contract = [
     createDate: "2021-02-26 11:32"
   },
   {
-    name: "피자헛",
+    name: "버거킹",
     addr: "(07769) 서울시 화곡동 24-122 송원오피스텔 203호",
     tel: "010-8753-0343",
     contractor: "임대성",
@@ -107,7 +107,7 @@ export const contract = [
     createDate: "2021-02-26 11:32"
   },
   {
-    name: "피자헛",
+    name: "파파이스",
     addr: "(07769) 서울시 화곡동 24-122 송원오피스텔 203호",
     tel: "010-8753-0343",
     contractor: "임대성",
@@ -119,7 +119,7 @@ export const contract = [
     createDate: "2021-02-26 11:32"
   },
   {
-    name: "피자헛",
+    name: "서울금방",
     addr: "(07769) 서울시 화곡동 24-122 송원오피스텔 203호",
     tel: "010-8753-0343",
     contractor: "임대성",
@@ -128,18 +128,6 @@ export const contract = [
     business: "X",
     contract: "O",
     status: "반려",
-    createDate: "2021-02-26 11:32"
-  },
-  {
-    name: "피자헛",
-    addr: "(07769) 서울시 화곡동 24-122 송원오피스텔 203호",
-    tel: "010-8753-0343",
-    contractor: "임대성",
-    master: "관창수",
-    menu: "X",
-    business: "X",
-    contract: "O",
-    status: "계약종료",
     createDate: "2021-02-26 11:32"
   }
 ];

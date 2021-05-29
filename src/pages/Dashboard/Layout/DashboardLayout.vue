@@ -8,16 +8,12 @@
     <notifications></notifications>
     <side-bar
       :active-color="sidebarBackground"
-      :background-image="sidebarBackgroundImage"
       :data-background-color="sidebarBackgroundColor"
     >
-      <user-menu></user-menu>
+
       <template slot="links">
         <sidebar-item
-          :link="{ name: '계정등록', icon: 'add', path: '/user' }"
-        />
-        <sidebar-item
-          :link="{ name: '계약등록', icon: 'post_add', path: '/contract' }"
+          :link="{ name: '내 정보', icon: 'person', path: '/info' }"
         />
         <sidebar-item
           :link="{ name: '회원목록', icon: 'grid_on', path: '/list/user' }"
@@ -82,13 +78,11 @@ function reinitScrollbar() {
 }
 
 import TopNavbar from "./TopNavbar.vue";
-import UserMenu from "./Extra/UserMenu.vue";
 import { ZoomCenterTransition } from "vue2-transitions";
 
 export default {
   components: {
     TopNavbar,
-    UserMenu,
     ZoomCenterTransition
   },
   data() {
@@ -153,5 +147,9 @@ $scaleSize: 0.95;
 
 .main-panel .zoomOut {
   animation-name: zoomOut95;
+}
+
+.wrapper {
+  overflow-x: hidden;
 }
 </style>
