@@ -1,6 +1,9 @@
 <template>
   <div
     class="wrapper"
+    :class="[
+      { 'nav-open': $sidebar.showSidebar },
+    ]"
   >
     <notifications></notifications>
     <side-bar
