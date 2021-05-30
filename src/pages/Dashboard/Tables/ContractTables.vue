@@ -42,12 +42,19 @@
           <h4 class="title">
             계약 목록
             <div class="table-header-button">
-              <md-button class="md-success md-dense" @click="openModal({}, 'SAVE')">등록</md-button>
+              <md-button
+                class="md-success md-dense"
+                @click="openModal({}, 'SAVE')"
+                >등록</md-button
+              >
             </div>
           </h4>
         </md-card-header>
         <md-card-content>
-          <md-table v-model="tableData" table-header-color="green">
+          <div class="spinner" v-if="loading">
+            <md-progress-spinner class="md-accent" :md-stroke="3" md-mode="indeterminate"/>
+          </div>
+          <md-table v-model="tableData" table-header-color="green" v-else>
             <md-table-row slot="md-table-row" slot-scope="{ item }">
               <md-table-cell md-label="상호명">{{ item.name }}</md-table-cell>
               <md-table-cell md-label="주소">{{ item.addr }}</md-table-cell>
@@ -86,11 +93,22 @@
 import Pagination from "@/components/Pagination";
 import { contract } from "@/pages/Dashboard/Tables/users";
 import ContractFormModal from "@/pages/Dashboard/Forms/ContractFormModal";
+import axios from "axios";
 
 export default {
   components: { ContractFormModal, Pagination },
-  created() {
-    this.tableData = contract;
+  async created() {
+    this.loading = true;
+    try{
+      const { data } = await axios.get(
+        "http://my-json-server.typicode.com/dslim0226/test-json/contract"
+      );
+      this.tableData = data;
+    } catch (e) {
+      console.log(e);
+    }
+
+    this.loading = false;
   },
   data() {
     return {
@@ -101,7 +119,8 @@ export default {
       search: "",
       open: false,
       modalMode: "SAVE",
-      modalItem: {}
+      modalItem: {},
+      loading: false
     };
   },
   methods: {
@@ -117,6 +136,8 @@ export default {
     }
   }
 };
+// TODO : AXIOS 연결은 목록 까지만 했음.
+// TODO : Search, Paging, my-info, 목록에서 detail 불러올떄 id 기준으로 가져올 수 있게 작업
 </script>
 <style scoped>
 .paging {

@@ -1,6 +1,5 @@
 import DashboardLayout from "@/pages/Dashboard/Layout/DashboardLayout.vue";
 
-
 import UserTables from "@/pages/Dashboard/Tables/UserTables.vue";
 
 import ContractTables from "@/pages/Dashboard/Tables/ContractTables";
@@ -44,7 +43,6 @@ let tablesMenu = {
     }
   ]
 };
-
 
 const routes = [
   {

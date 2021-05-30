@@ -59,7 +59,7 @@
     top: 0;
     bottom: 0;
     left: 0;
-    z-index: 9999;
+    z-index: 4;
     width: 260px;
     background: $white-color;
     width: 260px;
@@ -674,7 +674,7 @@
         .sidebar{
             display: block;
             font-weight: 200;
-            z-index: 9999;
+            z-index: 4;
 
             .logo{
                 a.logo-normal{

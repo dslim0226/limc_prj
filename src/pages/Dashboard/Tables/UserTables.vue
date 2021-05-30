@@ -1,35 +1,60 @@
 <template>
   <div class="md-layout">
     <div class="md-layout-item md-size-100">
-
-      <md-card>
+      <md-card class="search-top">
         <md-card-header class="md-card-header-text md-card-header-green">
-          <div class="card-text">
-            <h4 class="title text-bold">회원 목록</h4>
+          <div class="card-icon">
+            <md-icon>search</md-icon>
           </div>
+          <h4 class="title">검색</h4>
         </md-card-header>
+
         <md-card-content>
           <div class="table-top">
             <div class="md-layout-item md-layout table-top-left">
-              <md-field class="md-layout-item md-large-size-15 md-small-size-45 md-xsmall-size-100 mr-5">
+              <md-field
+                class="md-layout-item md-large-size-15 md-small-size-45 md-xsmall-size-100 mr-5"
+              >
                 <label for="filter">권한</label>
                 <md-select value="" name="filter" id="filter">
                   <md-option value="0">중간관리자</md-option>
                   <md-option value="1">일반관리자</md-option>
                 </md-select>
               </md-field>
-              <md-field class="md-layout-item md-large-size-20 md-small-size-45 md-xsmall-size-100"
-                        style="padding-right:0;">
+              <md-field
+                class="md-layout-item md-large-size-20 md-small-size-45 md-xsmall-size-100"
+                style="padding-right:0;"
+              >
                 <label>아이디 / 이름</label>
-                <md-input v-model="id" />
+                <md-input v-model="search" />
                 <md-button class="md-icon-button">
                   <md-icon>search</md-icon>
                 </md-button>
               </md-field>
             </div>
-            <div class="table-top-left">
-              <md-button class="md-primary"  @click="openModal({}, 'SAVE')">등록</md-button>
+          </div>
+        </md-card-content>
+      </md-card>
+
+      <md-card>
+        <md-card-header class="md-card-header-text md-card-header-green">
+          <div class="card-icon">
+            <md-icon>groups</md-icon>
+          </div>
+          <h4 class="title">
+            회원 목록
+            <div class="table-header-button">
+              <md-button
+                class="md-success md-dense"
+                @click="openModal({}, 'SAVE')"
+                >등록</md-button
+              >
             </div>
+          </h4>
+        </md-card-header>
+        <md-card-content>
+          <div class="spinner" v-if="loading">
+            <md-progress-spinner class="md-accent" :md-stroke="3" md-mode="indeterminate"/>
           </div>
           <md-table v-model="tableData" table-header-color="green">
             <md-table-row slot="md-table-row" slot-scope="{ item }">
@@ -38,23 +63,30 @@
               <md-table-cell md-label="전화번호">{{ item.tel }}</md-table-cell>
               <md-table-cell md-label="권한">{{ item.role }}</md-table-cell>
               <md-table-cell md-label="관리자">{{ item.master }}</md-table-cell>
-              <md-table-cell md-label="가입일">{{ item.createDate }}</md-table-cell>
+              <md-table-cell md-label="가입일"
+                >{{ item.createDate }}
+              </md-table-cell>
               <md-table-cell md-label="수정" style="">
-                <md-button class="md-primary md-fab md-icon-button" @click.native="openModal(item, 'MODIFY')">
+                <md-button
+                  class="md-primary md-fab md-icon-button"
+                  @click.native="openModal(item, 'MODIFY')"
+                >
                   <md-icon>edit</md-icon>
                 </md-button>
               </md-table-cell>
             </md-table-row>
           </md-table>
           <div class="paging">
-            <pagination v-model="currentPage"
-                        :per-page="perPage"
-                        :total="total" />
+            <pagination
+              v-model="currentPage"
+              :per-page="perPage"
+              :total="total"
+            />
           </div>
         </md-card-content>
       </md-card>
     </div>
-    <UserFormModal
+    <user-form-modal
       @close="close"
       :item="modalItem"
       :mode="modalMode"
@@ -66,11 +98,22 @@
 import Pagination from "@/components/Pagination";
 import { users } from "@/pages/Dashboard/Tables/users";
 import UserFormModal from "@/pages/Dashboard/Forms/UserFormModal";
+import axios from "axios";
 
 export default {
   components: { UserFormModal, Pagination },
-  created() {
-    this.tableData = users;
+  async created() {
+    this.loading = true;
+    try{
+      const { data } = await axios.get(
+        "http://my-json-server.typicode.com/dslim0226/test-json/user"
+      );
+      this.tableData = data;
+    } catch (e) {
+      console.log(e);
+    }
+
+    this.loading = false;
   },
   data() {
     return {
@@ -80,7 +123,9 @@ export default {
       tableData: [],
       open: false,
       modalMode: "SAVE",
-      modalItem: {}
+      modalItem: {},
+      search: "",
+      loading: false
     };
   },
   methods: {

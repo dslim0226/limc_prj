@@ -1,5 +1,5 @@
 <template>
-  <modal v-if="open" @close="$emit('close')">
+  <modal v-if="open" @close="$emit('close')" class="modal-user">
     <template slot="header">
       <h4 class="modal-title" v-if="isSaveMode">계정 등록</h4>
       <h4 class="modal-title" v-else-if="isModifyMode">계정 수정</h4>
@@ -15,12 +15,19 @@
       <div class="md-layout">
         <md-field>
           <label>아이디</label>
-          <md-input v-model="id" type="text" :disabled="isModifyMode"></md-input>
-          <md-button class="md-primary md-dense">
+          <md-input
+            v-model="id"
+            type="text"
+            :disabled="isModifyMode"
+          />
+          <md-button class="md-primary md-dense md-button-pc">
             <span>중복 검사</span>
           </md-button>
         </md-field>
       </div>
+      <md-button class="md-primary md-dense md-layout md-button-mobile">
+        <span>중복 검사</span>
+      </md-button>
 
       <div class="md-layout" v-if="isSaveMode">
         <md-field>
@@ -36,7 +43,6 @@
         </md-field>
       </div>
 
-
       <div class="md-layout">
         <md-field>
           <label>이름</label>
@@ -47,7 +53,12 @@
       <div class="md-layout">
         <md-field>
           <label>권한</label>
-          <md-select v-model="role" name="movie" id="movie" :disabled="isModifyMode">
+          <md-select
+            v-model="role"
+            name="movie"
+            id="movie"
+            :disabled="isModifyMode"
+          >
             <md-option value="중간관리자">중간관리자</md-option>
             <md-option value="일반관리자">일반관리자</md-option>
           </md-select>
@@ -81,8 +92,22 @@
 
     <template slot="footer">
       <md-card-actions>
-        <md-button type="submit" class="md-success" @click.native="join" v-if="isSaveMode">생성</md-button>
-        <md-button type="submit" class="md-success" @click.native="modify" v-else-if="isModifyMode">수정</md-button>
+        <md-button
+          type="submit"
+          class="md-success"
+          @click.native="join"
+          v-if="isSaveMode"
+        >생성
+        </md-button
+        >
+        <md-button
+          type="submit"
+          class="md-success"
+          @click.native="modify"
+          v-else-if="isModifyMode"
+        >수정
+        </md-button
+        >
       </md-card-actions>
     </template>
   </modal>
@@ -94,6 +119,9 @@ import _ from "lodash";
 import Modal from "@/components/Modal";
 
 export default {
+  created() {
+
+  },
   components: { Modal },
   props: {
     mode: {
@@ -139,7 +167,7 @@ export default {
   },
   methods: {
     close() {
-      this.$emit('close');
+      this.$emit("close");
     },
     join() {
       Swal.fire({
@@ -219,5 +247,22 @@ export default {
 
 .md-small-size-100 {
   text-align: left !important;
+}
+
+.md-button-pc {
+  display: block;
+}
+
+.md-button-mobile {
+  display: none;
+}
+
+@media screen and (max-width: 992px) {
+  .md-button-pc {
+    display: none;
+  }
+  .md-button-mobile {
+    display: block;
+  }
 }
 </style>

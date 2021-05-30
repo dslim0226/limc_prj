@@ -12,11 +12,16 @@
     >
 
       <template slot="links">
+        <open-modal-sidebar-item
+          class="modal-info-mobile"
+          :link="{ name: '내 정보', icon: 'person' }"
+        />
         <sidebar-item
+          class="modal-info-pc"
           :link="{ name: '내 정보', icon: 'person', path: '/info' }"
         />
         <sidebar-item
-          :link="{ name: '회원목록', icon: 'grid_on', path: '/list/user' }"
+          :link="{ name: '회원목록', icon: 'groups', path: '/list/user' }"
         />
         <sidebar-item
           :link="{ name: '계약목록', icon: 'grid_on', path: '/list/contract' }"
@@ -79,9 +84,11 @@ function reinitScrollbar() {
 
 import TopNavbar from "./TopNavbar.vue";
 import { ZoomCenterTransition } from "vue2-transitions";
+import OpenModalSidebarItem from "@/components/SidebarPlugin/OpenModalSidebarItem";
 
 export default {
   components: {
+    OpenModalSidebarItem,
     TopNavbar,
     ZoomCenterTransition
   },
@@ -169,12 +176,37 @@ body, h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4 {
 .modal-contract .modal-container{
   max-width: 50%;
 }
+.modal-user .modal-container{
+  max-width: 40%;
+  padding: 0% 1%;
+}
+.modal-info-pc {
+  display: none;
+}
+.modal-info-mobile {
+  display: block;
+}
+.spinner{
+  display: flex;
+  justify-content: center;
+}
+
 @media screen and (max-width: 992px) {
   .search-top {
     margin-top: 20px !important;
   }
   .modal-contract .modal-container{
     max-width: 90%;
+  }
+  .modal-user .modal-container{
+    max-width: 90%;
+    padding: 0%;
+  }
+  .modal-info-pc {
+    display: block;
+  }
+  .modal-info-mobile {
+    display: none;
   }
 }
 
