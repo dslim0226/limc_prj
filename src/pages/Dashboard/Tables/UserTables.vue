@@ -65,7 +65,7 @@
 <script>
 import Pagination from "@/components/Pagination";
 import { users } from "@/pages/Dashboard/Tables/users";
-import UserFormModal from "@/pages/Dashboard/Forms/ValidationForms/UserFormModal";
+import UserFormModal from "@/pages/Dashboard/Forms/UserFormModal";
 
 export default {
   components: { UserFormModal, Pagination },
