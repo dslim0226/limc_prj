@@ -3,12 +3,6 @@
     <template slot="header">
       <h4 class="modal-title" v-if="isSaveMode">계정 등록</h4>
       <h4 class="modal-title" v-else-if="isModifyMode">계정 수정</h4>
-      <md-button
-        class="md-simple md-just-icon md-round modal-default-button"
-        @click="close"
-      >
-        <md-icon>clear</md-icon>
-      </md-button>
     </template>
 
     <template slot="body">
@@ -91,23 +85,31 @@
     </template>
 
     <template slot="footer">
-      <md-card-actions>
-        <md-button
-          type="submit"
-          class="md-success"
-          @click.native="join"
-          v-if="isSaveMode"
-        >생성
-        </md-button
-        >
-        <md-button
-          type="submit"
-          class="md-success"
-          @click.native="modify"
-          v-else-if="isModifyMode"
-        >수정
-        </md-button
-        >
+      <md-card-actions md-alignment="space-between">
+        <div>
+          <md-button
+            @click="close"
+            class="md-default md-dense"
+          >
+            닫기
+          </md-button>
+        </div>
+        <div>
+          <md-button
+            type="submit"
+            class="md-success"
+            @click.native="join"
+            v-if="isSaveMode"
+            >생성
+          </md-button>
+          <md-button
+            type="submit"
+            class="md-success"
+            @click.native="modify"
+            v-else-if="isModifyMode"
+          >수정
+          </md-button>
+        </div>
       </md-card-actions>
     </template>
   </modal>

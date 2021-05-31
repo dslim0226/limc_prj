@@ -186,10 +186,6 @@ body, h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4 {
 .modal-info-mobile {
   display: block;
 }
-.spinner{
-  display: flex;
-  justify-content: center;
-}
 
 @media screen and (max-width: 992px) {
   .search-top {

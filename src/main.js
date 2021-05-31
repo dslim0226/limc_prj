@@ -23,10 +23,12 @@ import Chartist from "chartist";
 import routes from "./routes/routes";
 import LoadScript from "vue-plugin-load-script";
 
+import Vuex from 'vuex'
 // plugin setup
 Vue.use(VueRouter);
 Vue.use(DashboardPlugin);
 Vue.use(LoadScript);
+Vue.use(Vuex);
 
 // configure router
 const router = new VueRouter({

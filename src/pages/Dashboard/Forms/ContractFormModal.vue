@@ -4,47 +4,44 @@
       <h4 class="modal-title">
         계약 정보 {{(isSaveMode) ? '등록' : '수정'}}
       </h4>
-      <md-button
-        class="md-simple md-just-icon md-round modal-default-button"
-        @click="close"
-      >
-        <md-icon>clear</md-icon>
-      </md-button>
     </template>
 
-    <template slot="body">
+    <template slot="body" v-if="loading">
+      <spinner />
+    </template>
+    <template slot="body" v-else>
       <div class="md-layout">
         <md-field>
           <label>상호명</label>
-          <md-input v-model="name" type="text" />
+          <md-input v-model="contract.name" type="text" />
         </md-field>
       </div>
 
       <div class="md-layout">
         <md-field>
           <label>주소</label>
-          <md-input v-model="addr" :disabled="true" type="text" />
+          <md-input v-model="contract.addr" :disabled="true" type="text" />
           <md-button class="md-default md-dense" @click="kakaoMap">
             <template>주소찾기</template>
           </md-button>
         </md-field>
         <md-field v-if="isSaveMode">
           <label>상세주소 입력</label>
-          <md-input v-model="detail" type="text" />
+          <md-input v-model="contract.detail" type="text" />
         </md-field>
       </div>
 
       <div class="md-layout">
         <md-field>
           <label>연락처</label>
-          <md-input v-model="tel" type="text"></md-input>
+          <md-input v-model="contract.tel" type="text"></md-input>
         </md-field>
       </div>
 
       <div class="md-layout">
         <md-field>
           <label>대표명</label>
-          <md-input v-model="contractor" type="text"></md-input>
+          <md-input v-model="contract.contractor" type="text"></md-input>
         </md-field>
       </div>
 
@@ -105,7 +102,7 @@
       <div class="md-layout" v-if="isReSendStatus">
         <md-field>
           <label>반려사유</label>
-          <md-textarea :disabled="true" v-model="textarea" />
+          <md-textarea :disabled="true" v-model="contract.textarea" />
         </md-field>
       </div>
     </template>
@@ -161,55 +158,59 @@
 
 <script>
 import Swal from "sweetalert2";
-import _ from "lodash";
+import axios from "axios";
 import Modal from "@/components/Modal";
+import { contract } from "@/pages/Dashboard/Tables/users";
+import Spinner from "@/components/Spinner";
 
 export default {
-  components: { Modal },
+  components: { Spinner, Modal },
   props: {
     mode: {
       type: String,
       default: "SAVE"
     },
-    item: {
-      type: Object
+    id: {
+      type: Number
     },
     open: {
       type: Boolean
     }
   },
   watch: {
-    item: function(item) {
-      if (!_.isEmpty(item)) {
-        this.name = item.name;
-        this.addr = item.addr;
-        this.tel = item.tel;
-        this.contractor = item.contractor;
-        this.menu = item.menu;
-        this.business = item.business;
-        this.contract = item.contract;
-        this.status = item.status;
+    id:async function(id) {
+      if(id > -1) {
+        this.loading = true;
+
+        const { data } = await axios.get(
+          `http://my-json-server.typicode.com/dslim0226/test-json/contract/${id}`
+        );
+
+        this.contract = { ...contract, ...data };
+        this.loading = false;
+
       }
     }
   },
   data: () => ({
-    name: "",
-    addr: "",
-    detail: "",
-    tel: "",
-    contractor: "",
-    menu: [],
-    business: [],
-    contract: [],
-    status: "",
-    textarea: "이 곳에 반려사유가 출력됩니다."
+    contract: {
+      id: 0,
+      name: "",
+      addr: "",
+      detail: "",
+      tel: "",
+      contractor: "",
+      menu: [],
+      business: [],
+      contract: [],
+      status: "",
+      textarea: "이 곳에 반려사유가 출력됩니다."
+    },
+    loading: false
   }),
   computed: {
     isSaveMode() {
-      return this.mode === "SAVE";
-    },
-    isModifyMode() {
-      return this.mode === "MODIFY";
+      return this.id === -1;
     },
     isSaveStatus() {
       return this.status === "중간저장";
@@ -226,6 +227,20 @@ export default {
   },
   methods: {
     close() {
+      this.contract = {
+        id: 0,
+        name: "",
+        addr: "",
+        detail: "",
+        tel: "",
+        contractor: "",
+        menu: [],
+        business: [],
+        contract: [],
+        status: "",
+        textarea: "이 곳에 반려사유가 출력됩니다."
+      };
+
       this.$emit('close');
     },
     save() {

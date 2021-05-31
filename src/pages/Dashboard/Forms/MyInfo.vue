@@ -62,6 +62,7 @@
 <script>
 import Swal from "sweetalert2";
 import _ from "lodash";
+import axios from "axios";
 
 export default {
   props: {
@@ -73,16 +74,18 @@ export default {
       type: Object
     }
   },
-  created() {
-    console.log(this.item);
-    if (!_.isEmpty(this.item)) {
-      this.id = this.item.id;
-      this.name = this.item.name;
-      this.role = this.item.role;
-      this.tel = this.item.tel;
-      this.master = this.item.master;
-      this.createDate = this.item.createDate;
-    }
+  async created() {
+    this.loading = true;
+    // try {
+    //   const { data } = await axios.get(
+    //     url
+    //   );
+    //   this.tableData = data;
+    // } catch (e) {
+    //   console.log(e);
+    // }
+
+    this.loading = false;
   },
   data: () => ({
     id: "",
@@ -92,10 +95,14 @@ export default {
     role: "0",
     tel: "010-8753-0343",
     master: "",
-    createDate: ""
+    createDate: "",
+    modifyText: {
+      title: `내 정보 수정 완료`,
+      text: "내 정보 수정이 완료되었습니다."
+    }
   }),
   methods: {
-    join() {
+    showAlert() {
       Swal.fire({
         title: `내 정보 수정 완료`,
         text: "내 정보 수정이 완료되었습니다.",
@@ -103,16 +110,6 @@ export default {
         type: "success"
       }).then(() => {
         this.$router.push({ path: "/list/contract" });
-      });
-    },
-    modify() {
-      Swal.fire({
-        title: `계정 수정 완료`,
-        text: "계정 수정이 완료되었습니다.",
-        confirmButtonClass: "md-button md-success",
-        type: "success"
-      }).then(() => {
-        this.$router.push({ path: "/list/user" });
       });
     }
   }

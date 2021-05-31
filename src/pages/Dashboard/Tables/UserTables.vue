@@ -13,7 +13,7 @@
           <div class="table-top">
             <div class="md-layout-item md-layout table-top-left">
               <md-field
-                class="md-layout-item md-large-size-15 md-small-size-45 md-xsmall-size-100 mr-5"
+                class="md-layout-item md-xsmall-size-100 md-size-20 mr-5"
               >
                 <label for="filter">권한</label>
                 <md-select value="" name="filter" id="filter">
@@ -22,7 +22,7 @@
                 </md-select>
               </md-field>
               <md-field
-                class="md-layout-item md-large-size-20 md-small-size-45 md-xsmall-size-100"
+                class="md-layout-item md-xsmall-size-100 md-size-25"
                 style="padding-right:0;"
               >
                 <label>아이디 / 이름</label>
