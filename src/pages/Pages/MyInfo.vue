@@ -15,55 +15,50 @@
           <div class="md-layout">
             <md-field>
               <label>아이디</label>
-              <md-input
-                v-model="info.loginId"
-                type="text"
-                :disabled="true"
-              ></md-input>
+              <md-input v-model="user.loginId" :disabled="true" />
             </md-field>
           </div>
 
           <div class="md-layout">
             <md-field>
               <label>비밀번호</label>
-              <md-input v-model="info.password" type="password"></md-input>
+              <md-input v-model="user.password" type="password" />
             </md-field>
           </div>
 
           <div class="md-layout">
             <md-field>
               <label>비밀번호 확인</label>
-              <md-input v-model="info.password2" type="password"></md-input>
+              <md-input v-model="user.password2" type="password" />
             </md-field>
           </div>
 
           <div class="md-layout">
             <md-field>
               <label>이름</label>
-              <md-input v-model="info.name" type="text"></md-input>
+              <md-input v-model="user.name" />
             </md-field>
           </div>
 
           <div class="md-layout">
             <md-field>
               <label>연락처</label>
-              <md-input v-model="info.tel" type="text"></md-input>
+              <md-input v-model="user.tel" />
             </md-field>
           </div>
 
           <div class="md-layout">
             <md-field>
               <label>가입일</label>
-              <md-input
-                v-model="info.createDate"
-                type="text"
-                :disabled="true"
-              />
+              <md-input v-model="user.createDate" :disabled="true" />
             </md-field>
           </div>
         </md-card-content>
         <md-card-actions>
-          <md-button type="submit" class="md-success" @click.native="join"
+          <md-button
+            class="md-success md-dense"
+            @click="modify"
+            :disabled="!validateModify"
             >수정</md-button
           >
         </md-card-actions>
@@ -75,16 +70,29 @@
 import Swal from "sweetalert2";
 import axios from "axios";
 import Spinner from "@/components/Spinner";
+import AlertMixin from "@/mixin/AlertMixin";
 
 export default {
   components: { Spinner },
   props: {
-    mode: {
-      type: String,
-      default: "SAVE"
-    },
     item: {
       type: Object
+    }
+  },
+  mixins: [AlertMixin],
+  computed: {
+    checkPassword() {
+      const pw = this.user.password;
+      const pw2 = this.user.password2;
+      return pw.length > 3 && pw === pw2;
+    },
+    isChangeData() {
+      return (
+        this.backup.name !== this.user.name || this.backup.tel !== this.user.tel
+      );
+    },
+    validateModify() {
+      return this.checkPassword || this.isChangeData;
     }
   },
   async created() {
@@ -92,9 +100,11 @@ export default {
 
     try {
       const { data } = await axios.get(
-        "http://my-json-server.typicode.com/dslim0226/test-json/info"
+        "http://my-json-server.typicode.com/dslim0226/test-json/user/1"
       );
-      this.info = { ...this.info, ...data };
+      this.user = { ...this.user, ...data };
+      this.backup.name = data.name;
+      this.backup.tel = data.tel;
     } catch (e) {
       console.log(e);
     }
@@ -102,15 +112,19 @@ export default {
     this.loading = false;
   },
   data: () => ({
-    info: {
-      id: "",
+    backup: {
+      name: "",
+      tel: ""
+    },
+    user: {
+      userId: "",
       loginId: "",
       name: "",
       password: "",
       password2: "",
-      role: "",
+      authority: "",
       tel: "",
-      master: "",
+      parentAdmin: "",
       createDate: ""
     },
     loading: false,
@@ -120,15 +134,34 @@ export default {
     }
   }),
   methods: {
-    showAlert() {
-      Swal.fire({
-        title: `내 정보 수정 완료`,
-        text: "내 정보 수정이 완료되었습니다.",
-        confirmButtonClass: "md-button md-success",
-        type: "success"
-      }).then(() => {
-        this.$router.push({ path: "/list/contract" });
-      });
+    async modify() {
+      let body = {
+        userId: this.user.userId,
+        name: this.user.name,
+        tel: this.user.tel
+      };
+
+      if (this.checkPassword) {
+        body.password = this.password;
+      }
+
+      try {
+        // const { data } = await axios.put("/private/User", body);
+
+        this.showAlert(
+          "success",
+          "수정 성공",
+          "회원 정보가 수정되었습니다!",
+          () => {}
+        );
+      } catch (e) {
+        this.showAlert(
+          "error",
+          "수정 실패",
+          "회원 정보 수정 중 오류가 발생했습니다.",
+          () => {}
+        );
+      }
     }
   }
 };

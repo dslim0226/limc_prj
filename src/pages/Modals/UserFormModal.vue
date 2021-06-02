@@ -255,7 +255,7 @@ export default {
           }
         );
       } catch (e) {
-        this.showAlert("error", "수정 실패", "회원 정보가 수정 중 오류가 발생했습니다.",()=>{});
+        this.showAlert("error", "수정 실패", "회원 정보 수정 중 오류가 발생했습니다.",()=>{});
       }
     },
     init() {
