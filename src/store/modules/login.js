@@ -3,7 +3,7 @@ const getDefaultState = () => {
     accessToken: "",
     refreshToken: "",
     memberId: "",
-    authority: "",
+    authority: "MIDDLE_ADMIN"
   };
 };
 

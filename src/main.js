@@ -23,12 +23,11 @@ import Chartist from "chartist";
 import routes from "./routes/routes";
 import LoadScript from "vue-plugin-load-script";
 
-import Vuex from 'vuex'
+import store from "@/store";
 // plugin setup
 Vue.use(VueRouter);
 Vue.use(DashboardPlugin);
 Vue.use(LoadScript);
-Vue.use(Vuex);
 
 // configure router
 const router = new VueRouter({
@@ -50,5 +49,6 @@ Vue.prototype.$Chartist = Chartist;
 new Vue({
   el: "#app",
   render: h => h(App),
+  store,
   router
 });

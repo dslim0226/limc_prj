@@ -10,25 +10,28 @@
       </md-button>
     </template>
 
-    <template slot="body">
+    <template slot="body" v-if="loading">
+      <spinner />
+    </template>
+    <template slot="body" v-else>
       <div class="md-layout">
         <md-field>
           <label>아이디</label>
-          <md-input value="myIdSample" type="text" :disabled="true"></md-input>
+          <md-input v-model="info.loginId" type="text" :disabled="true"></md-input>
         </md-field>
       </div>
 
       <div class="md-layout">
         <md-field>
           <label>비밀번호</label>
-          <md-input v-model="password" type="password"></md-input>
+          <md-input v-model="info.password" type="password"></md-input>
         </md-field>
       </div>
 
       <div class="md-layout">
         <md-field>
           <label>비밀번호 확인</label>
-          <md-input v-model="password2" type="password"></md-input>
+          <md-input v-model="info.password2" type="password"></md-input>
         </md-field>
       </div>
 
@@ -36,21 +39,21 @@
       <div class="md-layout">
         <md-field>
           <label>이름</label>
-          <md-input v-model="name" type="text"></md-input>
+          <md-input v-model="info.name" type="text"></md-input>
         </md-field>
       </div>
 
       <div class="md-layout">
         <md-field>
           <label>연락처</label>
-          <md-input v-model="tel" type="text"></md-input>
+          <md-input v-model="info.tel" type="text"></md-input>
         </md-field>
       </div>
 
       <div class="md-layout">
         <md-field>
           <label>가입일</label>
-          <md-input value="2021-02-26 17:33" type="text" :disabled="true" />
+          <md-input v-model="info.createDate" type="text" :disabled="true" />
         </md-field>
       </div>
     </template>
@@ -67,25 +70,44 @@
 
 <script>
 import Swal from "sweetalert2";
-import _ from "lodash";
 import Modal from "@/components/Modal";
+import axios from "axios";
+import Spinner from "@/components/Spinner";
 
 export default {
-  components: { Modal },
+  components: { Spinner, Modal },
   props: {
     open: {
       type: Boolean
     }
   },
+  async created() {
+    this.loading = true;
+
+    try {
+      const { data } = await axios.get(
+        "http://my-json-server.typicode.com/dslim0226/test-json/info"
+      );
+      this.info = { ...this.info, ...data };
+    } catch (e) {
+      console.log(e);
+    }
+
+    this.loading = false;
+  },
   data: () => ({
-    id: "",
-    name: "임대성",
-    password: "",
-    password2: "",
-    role: "0",
-    tel: "010-8753-0343",
-    master: "",
-    createDate: ""
+    info: {
+      id: "",
+      loginId: "",
+      name: "",
+      password: "",
+      password2: "",
+      role: "",
+      tel: "",
+      master: "",
+      createDate: ""
+    },
+    loading: false
   }),
   methods: {
     join() {

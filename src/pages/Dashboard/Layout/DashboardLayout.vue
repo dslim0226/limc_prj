@@ -12,12 +12,7 @@
     >
 
       <template slot="links">
-        <open-modal-sidebar-item
-          class="modal-info-mobile"
-          :link="{ name: '내 정보', icon: 'person' }"
-        />
         <sidebar-item
-          class="modal-info-pc"
           :link="{ name: '내 정보', icon: 'person', path: '/info' }"
         />
         <sidebar-item
@@ -84,11 +79,9 @@ function reinitScrollbar() {
 
 import TopNavbar from "./TopNavbar.vue";
 import { ZoomCenterTransition } from "vue2-transitions";
-import OpenModalSidebarItem from "@/components/SidebarPlugin/OpenModalSidebarItem";
 
 export default {
   components: {
-    OpenModalSidebarItem,
     TopNavbar,
     ZoomCenterTransition
   },
@@ -180,12 +173,6 @@ body, h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4 {
   max-width: 40%;
   padding: 0% 1%;
 }
-.modal-info-pc {
-  display: none;
-}
-.modal-info-mobile {
-  display: block;
-}
 
 @media screen and (max-width: 992px) {
   .search-top {
@@ -197,12 +184,6 @@ body, h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4 {
   .modal-user .modal-container{
     max-width: 90%;
     padding: 0%;
-  }
-  .modal-info-pc {
-    display: block;
-  }
-  .modal-info-mobile {
-    display: none;
   }
 }
 

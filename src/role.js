@@ -1,0 +1,5 @@
+module.exports = {
+  CHIEF_ADMIN: "CHIEF_ADMIN",
+  MIDDLE_ADMIN: "MIDDLE_ADMIN",
+  GENERAL_USER: "GENERAL_USER"
+};

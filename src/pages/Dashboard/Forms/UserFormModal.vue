@@ -1,68 +1,80 @@
 <template>
   <modal v-if="open" @close="$emit('close')" class="modal-user">
     <template slot="header">
-      <h4 class="modal-title" v-if="isSaveMode">계정 등록</h4>
-      <h4 class="modal-title" v-else-if="isModifyMode">계정 수정</h4>
+      <h4 class="modal-title">회원 정보 {{ isSaveMode ? "등록" : "수정" }}</h4>
     </template>
 
-    <template slot="body">
+    <template slot="body" v-if="loading">
+      <spinner />
+    </template>
+    <template slot="body" v-else>
       <div class="md-layout">
         <md-field>
           <label>아이디</label>
           <md-input
-            v-model="id"
+            v-model="user.loginId"
             type="text"
-            :disabled="isModifyMode"
+            :disabled="!isSaveMode"
           />
-          <md-button class="md-primary md-dense md-button-pc">
+          <md-button
+            v-if="isSaveMode"
+            class="md-primary md-dense md-button-pc"
+            :disabled="isIdCheck"
+            @click="check"
+          >
             <span>중복 검사</span>
           </md-button>
         </md-field>
       </div>
-      <md-button class="md-primary md-dense md-layout md-button-mobile">
+      <md-button
+        v-if="isSaveMode"
+        class="md-primary md-dense md-layout md-button-mobile"
+        :disalbed="isIdCheck"
+        @click="check"
+      >
         <span>중복 검사</span>
       </md-button>
 
       <div class="md-layout" v-if="isSaveMode">
         <md-field>
           <label>비밀번호</label>
-          <md-input v-model="password" type="password"></md-input>
+          <md-input v-model="user.password" type="password"></md-input>
         </md-field>
       </div>
 
       <div class="md-layout" v-if="isSaveMode">
         <md-field>
           <label>비밀번호 확인</label>
-          <md-input v-model="password2" type="password"></md-input>
+          <md-input v-model="user.password2" type="password"></md-input>
         </md-field>
       </div>
 
       <div class="md-layout">
         <md-field>
           <label>이름</label>
-          <md-input v-model="name" type="text"></md-input>
+          <md-input v-model="user.name" type="text"></md-input>
         </md-field>
       </div>
 
-      <div class="md-layout">
+      <div class="md-layout" v-if="isChiefAdmin">
         <md-field>
           <label>권한</label>
-          <md-select
-            v-model="role"
-            name="movie"
-            id="movie"
-            :disabled="isModifyMode"
-          >
-            <md-option value="중간관리자">중간관리자</md-option>
-            <md-option value="일반관리자">일반관리자</md-option>
+          <md-select v-model="user.authority" :disabled="!isSaveMode">
+            <md-option :value="userRole.MIDDLE_ADMIN">중간관리자</md-option>
+            <md-option :value="userRole.GENERAL_USER">일반관리자</md-option>
           </md-select>
         </md-field>
       </div>
 
-      <div class="md-layout">
+      <div class="md-layout" v-if="isChiefAdmin && checkMiddleAdminInForm">
         <md-field>
           <label>담당자</label>
-          <md-select value="0" name="movie" id="movie" :disabled="isModifyMode">
+          <md-select
+            v-model="user.parentAdmin"
+            name="movie"
+            id="movie"
+            :disabled="!isSaveMode"
+          >
             <md-option value="0">임대성</md-option>
             <md-option value="1">강찬수</md-option>
           </md-select>
@@ -72,14 +84,14 @@
       <div class="md-layout">
         <md-field>
           <label>연락처</label>
-          <md-input v-model="tel" type="text"></md-input>
+          <md-input v-model="user.tel" type="text"></md-input>
         </md-field>
       </div>
 
-      <div class="md-layout" v-if="isModifyMode">
+      <div class="md-layout" v-if="!isSaveMode">
         <md-field>
           <label>가입일</label>
-          <md-input :value="createDate" type="text" :disabled="true" />
+          <md-input :value="user.createDate" type="text" :disabled="true" />
         </md-field>
       </div>
     </template>
@@ -87,26 +99,22 @@
     <template slot="footer">
       <md-card-actions md-alignment="space-between">
         <div>
-          <md-button
-            @click="close"
-            class="md-default md-dense"
-          >
+          <md-button @click="close" class="md-default md-dense">
             닫기
           </md-button>
         </div>
         <div>
           <md-button
-            type="submit"
-            class="md-success"
-            @click.native="join"
+            :disabled="!validateCreate"
+            class="md-success md-dense"
             v-if="isSaveMode"
-            >생성
+          >생성
           </md-button>
           <md-button
-            type="submit"
-            class="md-success"
-            @click.native="modify"
-            v-else-if="isModifyMode"
+            :disabled="!isChangeData"
+            @click="updateUser"
+            class="md-success md-dense"
+            v-else-if="!isSaveMode"
           >수정
           </md-button>
         </div>
@@ -116,80 +124,153 @@
 </template>
 
 <script>
-import Swal from "sweetalert2";
-import _ from "lodash";
+import * as userRole from "@/role";
 import Modal from "@/components/Modal";
+import axios from "axios";
+import Spinner from "@/components/Spinner";
+import AuthorityMixin from "@/mixin/AuthorityMixin";
+import AlertMixin from "@/mixin/AlertMixin";
 
 export default {
-  created() {
-
+  async created() {
+    // const { data } = await axios.get("/private/user/authorities");
+    // this.parentAdminList = data.map(x => `${x.name}(${x.loginId})`);
   },
-  components: { Modal },
+  components: { Spinner, Modal },
+  mixins: [AuthorityMixin, AlertMixin],
   props: {
-    mode: {
-      type: String,
-      default: "SAVE"
-    },
-    item: {
-      type: Object
+    id: {
+      type: Number
     },
     open: {
       type: Boolean
     }
   },
-  watch: {
-    item: function(item) {
-      if (!_.isEmpty(item)) {
-        this.id = item.id;
-        this.name = item.name;
-        this.role = item.role;
-        this.tel = item.tel;
-        this.master = item.master;
-        this.createDate = item.createDate;
+  computed: {
+    isSaveMode() {
+      return this.id === -1;
+    },
+    isChangeData() {
+      return (
+        this.backup.name !== this.user.name || this.backup.tel !== this.user.tel
+      );
+    },
+    checkMiddleAdminInForm() {
+      return this.user.role === userRole.MIDDLE_ADMIN;
+    },
+    isIdCheck() {
+      return this.idCheck || this.user.loginId.length < 1;
+    },
+    checkPassword() {
+      const pw = this.user.password;
+      const pw2 = this.user.password2;
+      return pw.length > 3 && pw === pw2;
+    },
+    checkName() {
+      return this.user.name.length > 0;
+    },
+    checkTel() {
+      return this.user.tel.length > 0;
+    },
+    validateCreate() {
+      let check = true;
+      if (this.isChiefAdmin) {
+        check =
+          this.authority.length > 0 &&
+          (this.checkMiddleAdminInForm
+            ? true
+            : this.parentAdminList.length > 0);
       }
+      return this.isIdCheck && this.checkPassword && this.checkName && this.checkTel && check;
+    }
+  },
+  watch: {
+    id: async function(id) {
+      this.init();
+      if (id > -1) {
+        this.loading = true;
+
+        const { data } = await axios.get(
+          `http://my-json-server.typicode.com/dslim0226/test-json/user/${id}`
+        );
+
+        this.user = { ...this.user, ...data };
+        this.backup.name = data.name;
+        this.backup.tel = data.tel;
+        this.loading = false;
+      } else {
+        this.init();
+      }
+    },
+    "user.loginId": function() {
+      this.idCheck = false;
     }
   },
   data: () => ({
-    id: "",
-    name: "",
-    password: "",
-    password2: "",
-    role: "0",
-    tel: "",
-    master: "",
-    createDate: ""
-  }),
-  computed: {
-    isSaveMode() {
-      return this.mode === "SAVE";
+    backup: {
+      name: "",
+      tel: ""
     },
-    isModifyMode() {
-      return this.mode === "MODIFY";
-    }
-  },
+    user: {
+      userId: "",
+      loginId: "",
+      name: "",
+      password: "",
+      password2: "",
+      authority: "",
+      tel: "",
+      parentAdmin: "",
+      createDate: ""
+    },
+    parentAdminList: [],
+    idCheck: false,
+    loading: false
+  }),
   methods: {
     close() {
+      this.init();
       this.$emit("close");
     },
-    join() {
-      Swal.fire({
-        title: `계정 등록 완료`,
-        text: "계정 등록이 완료되었습니다.",
-        confirmButtonClass: "md-button md-success",
-        type: "success"
-      }).then(() => {
-        this.close();
-      });
+    async check() {
+      // const { data } = await axios.get("/private/User/check", {
+      //   params: {
+      //     loginId: this.user.loginId
+      //   }
+      // });
+      //
+      // this.idCheck = data;
+
+      this.idCheck = true;
     },
-    modify() {
-      Swal.fire({
-        title: `계정 수정 완료`,
-        text: "계정 수정이 완료되었습니다.",
-        confirmButtonClass: "md-button md-success",
-        type: "success"
-      }).then(() => {
-        this.close();
-      });
+    async updateUser() {
+      try {
+        // const { data } = await axios.put("/private/User", {
+        //   userId: this.user.userId,
+        //   name: this.user.name,
+        //   tel: this.user.tel
+        // });
+
+        this.showAlert("success", "수정 성공", "회원 정보가 수정되었습니다!", function() {
+            this.close();
+          }
+        );
+      } catch (e) {
+        this.showAlert("error", "수정 실패", "회원 정보가 수정 중 오류가 발생했습니다.",()=>{});
+      }
+    },
+    init() {
+      this.user = {
+        userId: "",
+        loginId: "",
+        name: "",
+        password: "",
+        password2: "",
+        role: "0",
+        tel: "",
+        master: "",
+        createDate: ""
+      };
+      this.idCheck = false;
     }
   }
 };

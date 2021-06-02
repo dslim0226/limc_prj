@@ -15,7 +15,12 @@
           <label>비밀번호</label>
           <md-input type="password" v-model="password"></md-input>
         </md-field>
-        <md-button @click="login" slot="footer" class="md-simple md-success md-lg">
+        <md-button
+          :disabled="!hasLoginData"
+          @click="login"
+          slot="footer"
+          class="md-simple md-success md-lg"
+        >
           로그인
         </md-button>
       </login-card>
@@ -28,10 +33,15 @@ export default {
   components: {
     LoginCard
   },
+  computed: {
+    hasLoginData() {
+      return this.id.length > 0 && this.password.length > 0;
+    }
+  },
   data() {
     return {
-      id: null,
-      password: null
+      id: "",
+      password: ""
     };
   },
   methods: {

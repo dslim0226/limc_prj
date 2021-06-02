@@ -16,9 +16,9 @@
                 class="md-layout-item md-xsmall-size-100 md-size-20 mr-5"
               >
                 <label for="filter">권한</label>
-                <md-select value="" name="filter" id="filter">
-                  <md-option value="0">중간관리자</md-option>
-                  <md-option value="1">일반관리자</md-option>
+                <md-select v-model="search.authority" name="filter" id="filter" :disabled="this.isMiddleAdmin">
+                  <md-option :value="userRole.MIDDLE_ADMIN" v-if="isChiefAdmin">중간관리자</md-option>
+                  <md-option :value="userRole.GENERAL_USER">일반관리자</md-option>
                 </md-select>
               </md-field>
               <md-field
@@ -26,8 +26,8 @@
                 style="padding-right:0;"
               >
                 <label>아이디 / 이름</label>
-                <md-input v-model="search" />
-                <md-button class="md-icon-button">
+                <md-input v-model="search.text" />
+                <md-button :disabled="!hasSearchText" class="md-icon-button">
                   <md-icon>search</md-icon>
                 </md-button>
               </md-field>
@@ -46,19 +46,17 @@
             <div class="table-header-button">
               <md-button
                 class="md-success md-dense"
-                @click="openModal({}, 'SAVE')"
+                @click="openModal(-1)"
                 >등록</md-button
               >
             </div>
           </h4>
         </md-card-header>
         <md-card-content>
-          <div class="spinner" v-if="loading">
-            <md-progress-spinner class="md-accent" :md-stroke="3" md-mode="indeterminate"/>
-          </div>
+          <spinner v-if="loading" />
           <md-table v-model="tableData" table-header-color="green">
             <md-table-row slot="md-table-row" slot-scope="{ item }">
-              <md-table-cell md-label="아이디">{{ item.id }}</md-table-cell>
+              <md-table-cell md-label="아이디">{{ item.loginId }}</md-table-cell>
               <md-table-cell md-label="이름">{{ item.name }}</md-table-cell>
               <md-table-cell md-label="전화번호">{{ item.tel }}</md-table-cell>
               <md-table-cell md-label="권한">{{ item.role }}</md-table-cell>
@@ -69,7 +67,7 @@
               <md-table-cell md-label="수정" style="">
                 <md-button
                   class="md-primary md-fab md-icon-button"
-                  @click.native="openModal(item, 'MODIFY')"
+                  @click.native="openModal(item.id)"
                 >
                   <md-icon>edit</md-icon>
                 </md-button>
@@ -88,21 +86,23 @@
     </div>
     <user-form-modal
       @close="close"
-      :item="modalItem"
-      :mode="modalMode"
+      :id="id"
       :open="open"
     />
   </div>
 </template>
 <script>
 import Pagination from "@/components/Pagination";
-import { users } from "@/pages/Dashboard/Tables/users";
 import UserFormModal from "@/pages/Dashboard/Forms/UserFormModal";
 import axios from "axios";
+import Spinner from "@/components/Spinner";
+import AuthorityMixin from "@/mixin/AuthorityMixin";
 
 export default {
-  components: { UserFormModal, Pagination },
+  components: { Spinner, UserFormModal, Pagination },
+  mixins: [AuthorityMixin],
   async created() {
+    if(this.isMiddleAdmin) this.search.authority = this.userRole.GENERAL_USER;
     this.loading = true;
     try{
       const { data } = await axios.get(
@@ -115,6 +115,11 @@ export default {
 
     this.loading = false;
   },
+  computed: {
+    hasSearchText() {
+      return this.search.text.length > 0;
+    }
+  },
   data() {
     return {
       currentPage: 1,
@@ -122,22 +127,22 @@ export default {
       total: 50,
       tableData: [],
       open: false,
-      modalMode: "SAVE",
-      modalItem: {},
-      search: "",
-      loading: false
+      id: -1,
+      search: {
+        authority: "",
+        text: ""
+      },
+      loading: false,
     };
   },
   methods: {
-    openModal(item, mode) {
+    openModal(id) {
       this.open = true;
-      this.modalItem = item;
-      this.modalMode = mode;
+      this.id = id;
     },
     close() {
       this.open = false;
-      this.modalMode = "SAVE";
-      this.modalItem = {};
+      this.id = -1;
     }
   }
 };

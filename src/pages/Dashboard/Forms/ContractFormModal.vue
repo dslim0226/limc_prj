@@ -1,9 +1,7 @@
 <template>
   <modal v-if="open" @close="$emit('close')" class="modal-contract">
     <template slot="header">
-      <h4 class="modal-title">
-        계약 정보 {{(isSaveMode) ? '등록' : '수정'}}
-      </h4>
+      <h4 class="modal-title">계약 정보 {{ isSaveMode ? "등록" : "수정" }}</h4>
     </template>
 
     <template slot="body" v-if="loading">
@@ -110,44 +108,28 @@
     <template slot="footer">
       <md-card-actions md-alignment="space-between">
         <div>
-          <md-button
-            @click="close"
-            class="md-default md-dense"
-          >
+          <md-button @click="close" class="md-default md-dense">
             닫기
           </md-button>
         </div>
         <div v-if="isSaveStatus || isSaveMode">
-          <md-button
-            @click="save"
-            class="md-info md-dense"
-          >
+          <md-button @click="save" class="md-info md-dense">
             중간저장
           </md-button>
-          <md-button
-            @click="send"
-            class="md-success md-dense"
-          >
+          <md-button @click="send" class="md-success md-dense">
             신청
           </md-button>
         </div>
         <div v-else-if="isSendStatus">
-          <md-button
-            class="md-success md-dense"
-          >
+          <md-button class="md-success md-dense">
             승인
           </md-button>
-          <md-button
-            class="md-danger md-dense"
-            @click.native="dis"
-          >
+          <md-button class="md-danger md-dense" @click.native="dis">
             반려
           </md-button>
         </div>
         <div v-else-if="isReSendStatus">
-          <md-button
-            class="md-success md-dense"
-          >
+          <md-button class="md-success md-dense">
             재요청
           </md-button>
         </div>
@@ -160,16 +142,11 @@
 import Swal from "sweetalert2";
 import axios from "axios";
 import Modal from "@/components/Modal";
-import { contract } from "@/pages/Dashboard/Tables/users";
 import Spinner from "@/components/Spinner";
 
 export default {
   components: { Spinner, Modal },
   props: {
-    mode: {
-      type: String,
-      default: "SAVE"
-    },
     id: {
       type: Number
     },
@@ -178,17 +155,16 @@ export default {
     }
   },
   watch: {
-    id:async function(id) {
-      if(id > -1) {
+    id: async function(id) {
+      if (id > -1) {
         this.loading = true;
 
         const { data } = await axios.get(
           `http://my-json-server.typicode.com/dslim0226/test-json/contract/${id}`
         );
 
-        this.contract = { ...contract, ...data };
+        this.contract = { ...this.contract, ...data };
         this.loading = false;
-
       }
     }
   },
@@ -241,7 +217,7 @@ export default {
         textarea: "이 곳에 반려사유가 출력됩니다."
       };
 
-      this.$emit('close');
+      this.$emit("close");
     },
     save() {
       Swal.fire({
@@ -265,31 +241,48 @@ export default {
     },
     kakaoMap() {
       const hello = this.hello;
-      this.$loadScript("//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js")
-      .then(() => {
-        new daum.Postcode({
-          oncomplete: function(data) {
-            hello(data.zonecode, data.jibunAddress);
-          }
-        }).open();
-      })
-      .catch(() => {
-        Swal.fire({
-          icon: "error",
-          text: `카카오 주소 검색 서비스 로딩 중 에러가 있습니다.<br>잠시 후 시도해주세요.`
+      this.$loadScript(
+        "//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"
+      )
+        .then(() => {
+          new daum.Postcode({
+            oncomplete: function(data) {
+              hello(data.zonecode, data.jibunAddress);
+            }
+          }).open();
+        })
+        .catch(() => {
+          Swal.fire({
+            icon: "error",
+            text: `카카오 주소 검색 서비스 로딩 중 에러가 있습니다.<br>잠시 후 시도해주세요.`
+          });
         });
-      });
     },
     hello(zip, addr) {
       this.addr = `(${zip}) ${addr}`;
     },
-    onMenuFileChange(e) {
+    async onMenuFileChange(e) {
       let files = e.target.files || e.dataTransfer.files;
-      if (files.length > 0) {
-        for (const item of files) {
-          this.menu.push(item.name);
-        }
+
+      const multipartFile = new FormData();
+
+      for (let i = 0; i < files.length; i++) {
+        multipartFile.append(`files`, files[i]);
       }
+
+      for (const key of multipartFile.entries()) {
+        console.log(`${key}`);
+      }
+
+      const hi = await axios.post(
+        "http://192.168.35.185:8080/private/contract",
+        multipartFile,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data"
+          }
+        }
+      );
     },
     async dis() {
       Swal.fire({
@@ -307,7 +300,7 @@ export default {
           this.$router.push({ path: "/list/contract" });
         });
       });
-    },
+    }
   }
 };
 </script>
