@@ -11,11 +11,15 @@
         <md-card-content v-if="loading">
           <spinner />
         </md-card-content>
-          <md-card-content v-else>
+        <md-card-content v-else>
           <div class="md-layout">
             <md-field>
               <label>아이디</label>
-              <md-input v-model="info.loginId" type="text" :disabled="true"></md-input>
+              <md-input
+                v-model="info.loginId"
+                type="text"
+                :disabled="true"
+              ></md-input>
             </md-field>
           </div>
 
@@ -32,7 +36,6 @@
               <md-input v-model="info.password2" type="password"></md-input>
             </md-field>
           </div>
-
 
           <div class="md-layout">
             <md-field>
@@ -51,12 +54,18 @@
           <div class="md-layout">
             <md-field>
               <label>가입일</label>
-              <md-input v-model="info.createDate" type="text" :disabled="true" />
+              <md-input
+                v-model="info.createDate"
+                type="text"
+                :disabled="true"
+              />
             </md-field>
           </div>
         </md-card-content>
         <md-card-actions>
-          <md-button type="submit" class="md-success" @click.native="join">수정</md-button>
+          <md-button type="submit" class="md-success" @click.native="join"
+            >수정</md-button
+          >
         </md-card-actions>
       </md-card>
     </div>
@@ -173,10 +182,10 @@ export default {
   align-items: flex-end;
 }
 
-.not-modify span{
+.not-modify span {
   font-weight: 400;
 }
 .md-small-size-100 {
-  text-align: left!important;
+  text-align: left !important;
 }
 </style>

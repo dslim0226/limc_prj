@@ -1,16 +1,10 @@
 <template>
-  <div
-    class="wrapper"
-    :class="[
-      { 'nav-open': $sidebar.showSidebar },
-    ]"
-  >
+  <div class="wrapper" :class="[{ 'nav-open': $sidebar.showSidebar }]">
     <notifications></notifications>
     <side-bar
       :active-color="sidebarBackground"
       :data-background-color="sidebarBackgroundColor"
     >
-
       <template slot="links">
         <sidebar-item
           :link="{ name: '내 정보', icon: 'person', path: '/info' }"
@@ -153,12 +147,21 @@ $scaleSize: 0.95;
   overflow-x: hidden;
 }
 
-
 /* kokimin css 작업 */
-body, h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4 {
-  font-family: "Nanum Gothic","Roboto", "Helvetica", "Arial", sans-serif;
- }
-.table-header-button{
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4 {
+  font-family: "Nanum Gothic", "Roboto", "Helvetica", "Arial", sans-serif;
+}
+.table-header-button {
   position: absolute;
   right: 20px;
   top: -10px;
@@ -166,10 +169,10 @@ body, h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4 {
 .search-top {
   margin-top: 0px;
 }
-.modal-contract .modal-container{
+.modal-contract .modal-container {
   max-width: 50%;
 }
-.modal-user .modal-container{
+.modal-user .modal-container {
   max-width: 40%;
   padding: 0% 1%;
 }
@@ -178,13 +181,12 @@ body, h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4 {
   .search-top {
     margin-top: 20px !important;
   }
-  .modal-contract .modal-container{
+  .modal-contract .modal-container {
     max-width: 90%;
   }
-  .modal-user .modal-container{
+  .modal-user .modal-container {
     max-width: 90%;
     padding: 0%;
   }
 }
-
 </style>

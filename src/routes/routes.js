@@ -1,11 +1,11 @@
-import DashboardLayout from "@/pages/Dashboard/Layout/DashboardLayout.vue";
+import DashboardLayout from "@/pages/Layout/DashboardLayout.vue";
 
-import UserTables from "@/pages/Dashboard/Tables/UserTables.vue";
+import UserTables from "@/pages/Pages/User.vue";
 
-import ContractTables from "@/pages/Dashboard/Tables/ContractTables";
-import MyInfo from "@/pages/Dashboard/Forms/MyInfo";
-import Login from "@/pages/Dashboard/Pages/Login";
-import AuthLayout from "@/pages/Dashboard/Pages/AuthLayout";
+import ContractTables from "@/pages/Pages/Contract";
+import MyInfo from "@/pages/Pages/MyInfo";
+import Login from "@/pages/Pages/Login";
+import AuthLayout from "@/pages/Layout/AuthLayout";
 
 let AuthMenu = {
   path: "/",

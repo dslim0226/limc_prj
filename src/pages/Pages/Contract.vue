@@ -53,7 +53,7 @@
           </h4>
         </md-card-header>
         <md-card-content>
-          <spinner  v-if="loading" />
+          <spinner v-if="loading" />
           <md-table v-model="tableData" table-header-color="green" v-else>
             <md-table-row slot="md-table-row" slot-scope="{ item }">
               <md-table-cell md-label="상호명">{{ item.name }}</md-table-cell>
@@ -63,7 +63,9 @@
                 item.contractor
               }}</md-table-cell>
               <md-table-cell md-label="담당자">{{ item.master }}</md-table-cell>
-              <md-table-cell md-label="메뉴판" class="text-center">{{ item.menu ? "O" : "X" }}</md-table-cell>
+              <md-table-cell md-label="메뉴판" class="text-center">{{
+                item.menu ? "O" : "X"
+              }}</md-table-cell>
               <md-table-cell md-label="사업자등록증" class="text-center">{{
                 item.business ? "O" : "X"
               }}</md-table-cell>
@@ -95,17 +97,12 @@
         </md-card-content>
       </md-card>
     </div>
-    <ContractFormModal
-      @close="close"
-      :id="id"
-      :mode="modalMode"
-      :open="open"
-    />
+    <ContractFormModal @close="close" :id="id" :mode="modalMode" :open="open" />
   </div>
 </template>
 <script>
 import Pagination from "@/components/Pagination";
-import ContractFormModal from "@/pages/Dashboard/Forms/ContractFormModal";
+import ContractFormModal from "@/pages/Modals/ContractFormModal";
 import axios from "axios";
 import Spinner from "@/components/Spinner";
 

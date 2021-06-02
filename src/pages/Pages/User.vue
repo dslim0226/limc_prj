@@ -16,9 +16,18 @@
                 class="md-layout-item md-xsmall-size-100 md-size-20 mr-5"
               >
                 <label for="filter">권한</label>
-                <md-select v-model="search.authority" name="filter" id="filter" :disabled="this.isMiddleAdmin">
-                  <md-option :value="userRole.MIDDLE_ADMIN" v-if="isChiefAdmin">중간관리자</md-option>
-                  <md-option :value="userRole.GENERAL_USER">일반관리자</md-option>
+                <md-select
+                  v-model="search.authority"
+                  name="filter"
+                  id="filter"
+                  :disabled="this.isMiddleAdmin"
+                >
+                  <md-option :value="userRole.MIDDLE_ADMIN" v-if="isChiefAdmin"
+                    >중간관리자</md-option
+                  >
+                  <md-option :value="userRole.GENERAL_USER"
+                    >일반관리자</md-option
+                  >
                 </md-select>
               </md-field>
               <md-field
@@ -44,9 +53,7 @@
           <h4 class="title">
             회원 목록
             <div class="table-header-button">
-              <md-button
-                class="md-success md-dense"
-                @click="openModal(-1)"
+              <md-button class="md-success md-dense" @click="openModal(-1)"
                 >등록</md-button
               >
             </div>
@@ -56,7 +63,9 @@
           <spinner v-if="loading" />
           <md-table v-model="tableData" table-header-color="green">
             <md-table-row slot="md-table-row" slot-scope="{ item }">
-              <md-table-cell md-label="아이디">{{ item.loginId }}</md-table-cell>
+              <md-table-cell md-label="아이디">{{
+                item.loginId
+              }}</md-table-cell>
               <md-table-cell md-label="이름">{{ item.name }}</md-table-cell>
               <md-table-cell md-label="전화번호">{{ item.tel }}</md-table-cell>
               <md-table-cell md-label="권한">{{ item.role }}</md-table-cell>
@@ -84,16 +93,12 @@
         </md-card-content>
       </md-card>
     </div>
-    <user-form-modal
-      @close="close"
-      :id="id"
-      :open="open"
-    />
+    <user-form-modal @close="close" :id="id" :open="open" />
   </div>
 </template>
 <script>
 import Pagination from "@/components/Pagination";
-import UserFormModal from "@/pages/Dashboard/Forms/UserFormModal";
+import UserFormModal from "@/pages/Modals/UserFormModal";
 import axios from "axios";
 import Spinner from "@/components/Spinner";
 import AuthorityMixin from "@/mixin/AuthorityMixin";
@@ -102,9 +107,9 @@ export default {
   components: { Spinner, UserFormModal, Pagination },
   mixins: [AuthorityMixin],
   async created() {
-    if(this.isMiddleAdmin) this.search.authority = this.userRole.GENERAL_USER;
+    if (this.isMiddleAdmin) this.search.authority = this.userRole.GENERAL_USER;
     this.loading = true;
-    try{
+    try {
       const { data } = await axios.get(
         "http://my-json-server.typicode.com/dslim0226/test-json/user"
       );
@@ -132,7 +137,7 @@ export default {
         authority: "",
         text: ""
       },
-      loading: false,
+      loading: false
     };
   },
   methods: {
