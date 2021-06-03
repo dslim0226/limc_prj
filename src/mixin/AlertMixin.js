@@ -6,7 +6,8 @@ export default {
       Swal.fire({
         icon: icon,
         title: title,
-        text: text
+        text: text,
+        allowOutsideClick: false
       }).then(callback);
     }
   }

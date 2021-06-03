@@ -105,16 +105,18 @@
         </div>
         <div>
           <md-button
-            :disabled="!validateCreate"
             class="md-success md-dense"
+            :disabled="!validateCreate"
             v-if="isSaveMode"
+            @click="createUser"
           >생성
           </md-button>
           <md-button
-            :disabled="!isChangeData"
-            @click="updateUser"
             class="md-success md-dense"
+            :disabled="!isChangeData"
             v-else-if="!isSaveMode"
+            @click="updateUser"
+
           >수정
           </md-button>
         </div>
@@ -159,7 +161,8 @@ export default {
       return this.user.role === userRole.MIDDLE_ADMIN;
     },
     isIdCheck() {
-      return this.idCheck || this.user.loginId.length < 1;
+
+      return this.idCheck || !/^[A-Za-z0-9]{4,}$/.test(this.user.loginId);
     },
     checkPassword() {
       const pw = this.user.password;
@@ -232,15 +235,19 @@ export default {
       this.$emit("close");
     },
     async check() {
-      // const { data } = await axios.get("/private/User/check", {
-      //   params: {
-      //     loginId: this.user.loginId
-      //   }
-      // });
-      //
-      // this.idCheck = data;
+      const { data } = await axios.get("http://192.168.35.102:8080/private/User/check", {
+        params: {
+          loginId: this.user.loginId
+        }
+      });
 
-      this.idCheck = true;
+      // TODO : 필드 유효성 -> 아이디(4자, 한글)
+      // TODO : 모달, Swal 바깥 클릭 막기
+      if(data.userId) {
+        this.showAlert("error", "중복된 아이디", "중복된 아이디 입니다.");
+      }
+
+      this.idCheck = !data.userId;
     },
     async updateUser() {
       try {
@@ -250,12 +257,39 @@ export default {
         //   tel: this.user.tel
         // });
 
-        this.showAlert("success", "수정 성공", "회원 정보가 수정되었습니다!", function() {
-            this.close();
-          }
-        );
+        this.showAlert("success", "수정 완료", "회원 정보가 수정되었습니다!", this.close);
       } catch (e) {
         this.showAlert("error", "수정 실패", "회원 정보 수정 중 오류가 발생했습니다.",()=>{});
+      }
+    },
+    async createUser() {
+      const body = {
+        loginId: this.user.loginId,
+        password: this.user.password,
+        userNm: this.user.name,
+        userRole: this.user.authority,
+        userTelNum: this.user.tel
+      };
+
+      // 최고 관리자가 일반 유저를 생성하는 경우에
+      // 부모 관리자를 설정해준다.
+      if(this.isChiefAdmin && body.userRole === this.userRole.GENERAL_USER) {
+        body["parentAdmin"] = this.user.parentAdmin;
+      };
+
+      // 현재 로그인한 사람이 중간 관리자라면
+      // 생성할 수 있는 유저 권한은 GENERAL_USER 뿐이고
+      // 부모는 자기 자신의 memberId 로 한다.
+      if(this.isMiddleAdmin) {
+        body["userRole"] = this.userRole.GENERAL_USER;
+        body["parentAdmin"] = this.memberId;
+      }
+
+      try{
+        await axios.post("http://192.168.35.102:8080/private/User", body);
+        this.showAlert("success", "생성 완료", "회원 정보가 생성되었습니다.", this.close)
+      } catch(e) {
+        this.showAlert("error", "생성 실패", "회원 정보 생성 중 오류가 발생했습니다.",()=>{})
       }
     },
     init() {

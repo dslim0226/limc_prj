@@ -8,7 +8,7 @@
         <md-field class="md-form-group" slot="inputs">
           <md-icon>person</md-icon>
           <label>아이디</label>
-          <md-input v-model="id"></md-input>
+          <md-input v-model="loginId"></md-input>
         </md-field>
         <md-field class="md-form-group" slot="inputs">
           <md-icon>lock_outline</md-icon>
@@ -29,6 +29,7 @@
 </template>
 <script>
 import { LoginCard } from "@/components";
+import axios from "axios";
 export default {
   components: {
     LoginCard
@@ -40,13 +41,18 @@ export default {
   },
   data() {
     return {
-      id: "",
+      loginId: "",
       password: ""
     };
   },
   methods: {
-    login() {
-      this.$router.push({ path: "/list/user" });
+    async login() {
+      const {data} = await axios.post("http://192.168.35.102:8080/public/login", {
+        loginId: this.loginId,
+        password: this.password
+      });
+
+
     }
   }
 };

@@ -152,7 +152,7 @@ export default {
   }
 };
 </script>
-<style scoped>
+<style>
 .paging {
   display: flex;
   justify-content: center;
@@ -177,5 +177,12 @@ export default {
 
 .table-top .table-top-right {
   margin-left: 0;
+}
+
+.md-table-cell-container {
+  text-align: center !important;
+}
+.md-table-head-container {
+  text-align: center !important;
 }
 </style>
