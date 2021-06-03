@@ -18,8 +18,6 @@
                 <label for="filter">권한</label>
                 <md-select
                   v-model="search.memberRole"
-                  name="filter"
-                  id="filter"
                   :disabled="this.isMiddleAdmin"
                 >
                   <md-option :value="userRole.MIDDLE_ADMIN" v-if="isChiefAdmin"
@@ -114,6 +112,7 @@ export default {
     if (this.isMiddleAdmin) this.search.memberRole = this.userRole.GENERAL_USER;
     this.loading = true;
     try {
+      // TODO : 페이징 추가
       const { data } = await axios.get(
         "http://my-json-server.typicode.com/dslim0226/test-json/user"
       );
@@ -152,6 +151,18 @@ export default {
     close() {
       this.open = false;
       this.id = -1;
+    },
+    searching() {
+      // TODO: paging 추가
+    },
+    async chgPage(item) {
+      // this.loading = true;
+      // const { data } = await axios.get(url, params: {
+      //  page: item
+      // });
+      //
+      // this.tableData = data;
+      // this.loading = false;
     }
   }
 };

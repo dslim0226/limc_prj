@@ -16,6 +16,7 @@
             type="text"
             :disabled="!isSaveMode"
           />
+          <span class="md-helper-text">영문 및 숫자를 포함한 4자리 이상 아이디를 적어주세요.</span>
           <md-button
             v-if="isSaveMode"
             class="md-primary md-dense md-button-pc"
@@ -39,6 +40,8 @@
         <md-field>
           <label>비밀번호</label>
           <md-input v-model="user.password" type="password"></md-input>
+          <span class="md-helper-text">4자리 이상의 비밀번호를 적어주세요.</span>
+
         </md-field>
       </div>
 
@@ -46,6 +49,7 @@
         <md-field>
           <label>비밀번호 확인</label>
           <md-input v-model="user.password2" type="password"></md-input>
+          <span class="md-helper-text">위와 같은 비밀번호를 적어주세요.</span>
         </md-field>
       </div>
 
@@ -71,12 +75,14 @@
           <label>담당자</label>
           <md-select
             v-model="user.parentAdmin"
-            name="movie"
-            id="movie"
             :disabled="!isSaveMode"
           >
-            <md-option value="0">임대성</md-option>
-            <md-option value="1">강찬수</md-option>
+            <md-option
+              v-for="(item, index) in parentAdminList"
+              :value="item.userId"
+              :key="index"
+              >{{ `${item.name}(${item.loginId})` }}</md-option
+            >
           </md-select>
         </md-field>
       </div>
@@ -135,6 +141,7 @@ import AlertMixin from "@/mixin/AlertMixin";
 
 export default {
   async created() {
+    // 일반관리자 생성 시 중간관리자 목록 리스트
     // const { data } = await axios.get("/private/user/authorities");
     // this.parentAdminList = data.map(x => `${x.name}(${x.loginId})`);
   },
@@ -158,11 +165,10 @@ export default {
       );
     },
     checkMiddleAdminInForm() {
-      return this.user.role === userRole.MIDDLE_ADMIN;
+      return this.user.memberRole === userRole.GENERAL_USER;
     },
     isIdCheck() {
-
-      return this.idCheck || !/^[A-Za-z0-9]{4,}$/.test(this.user.loginId);
+      return this.idCheck || !/^[!A-Za-z0-9]{4,}$/.test(this.user.loginId);
     },
     checkPassword() {
       const pw = this.user.password;
@@ -175,6 +181,9 @@ export default {
     checkTel() {
       return this.user.tel.length > 0;
     },
+    checkParent() {
+      return this.isChiefAdmin && this.checkMiddleAdminInForm && this.user.parentAdmin
+    },
     validateCreate() {
       let check = true;
       if (this.isChiefAdmin) {
@@ -184,6 +193,7 @@ export default {
             ? true
             : this.parentAdminList.length > 0);
       }
+
       return this.isIdCheck && this.checkPassword && this.checkName && this.checkTel && check;
     }
   },
@@ -207,7 +217,7 @@ export default {
     },
     "user.loginId": function() {
       this.idCheck = false;
-    }
+    },
   },
   data: () => ({
     backup: {
@@ -235,16 +245,16 @@ export default {
       this.$emit("close");
     },
     async check() {
-      const { data } = await axios.get("http://192.168.35.102:8080/private/User/check", {
-        params: {
-          loginId: this.user.loginId
-        }
-      });
+      // const { data } = await axios.get("http://192.168.35.102:8080/private/User/check", {
+      //   params: {
+      //     loginId: this.user.loginId
+      //   }
+      // });
 
-      // TODO : 필드 유효성 전체 추가
-      // TODO : 
       if(data.userId) {
         this.showAlert("error", "중복된 아이디", "중복된 아이디 입니다.");
+      } else {
+        this.showAlert("success", "사용할 수 있는 아이디", "사용할 수 있는 아이디 입니다.");
       }
 
       this.idCheck = !data.userId;
@@ -268,7 +278,7 @@ export default {
         password: this.user.password,
         userNm: this.user.name,
         userRole: this.user.memberRole,
-        userTelNum: this.user.tel
+        userTelNum: this.user.tel.replace(/[^0-9]/gi, "")
       };
 
       // 최고 관리자가 일반 유저를 생성하는 경우에

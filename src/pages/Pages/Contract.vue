@@ -8,6 +8,7 @@
           </div>
           <h4 class="title">검색</h4>
         </md-card-header>
+
         <md-card-content>
           <div class="table-top">
             <div class="md-layout-item md-layout table-top-left">
@@ -15,7 +16,7 @@
                 class="md-layout-item md-xsmall-size-100 md-size-20 mr-5"
               >
                 <label for="filter">상태</label>
-                <md-select value="" name="filter" id="filter">
+                <md-select value="search.status">
                   <!--                  <md-option value="0">중간저장</md-option>-->
                   <!-- 중간저장은 자신만 보이도록 (내꺼+중간저장) -->
                   <md-option value="1">신청</md-option>
@@ -26,8 +27,12 @@
               </md-field>
               <md-field class="md-layout-item md-xsmall-size-100 md-size-25">
                 <label>상호명</label>
-                <md-input v-model="search" />
-                <md-button @click="searching" class="md-icon-button">
+                <md-input v-model="search.text" />
+                <md-button
+                  :disabled="!hasSearchText"
+                  @click="searching"
+                  class="md-icon-button"
+                >
                   <md-icon>search</md-icon>
                 </md-button>
               </md-field>
@@ -121,6 +126,11 @@ export default {
 
     this.loading = false;
   },
+  computed: {
+    hasSearchText() {
+      return this.search.text.length > 0;
+    }
+  },
   data() {
     return {
       id: 0,
@@ -128,7 +138,10 @@ export default {
       perPage: 10,
       total: 88,
       tableData: [],
-      search: "",
+      search: {
+        memberRole: "",
+        text: ""
+      },
       open: false,
       modalMode: "SAVE",
       loading: false

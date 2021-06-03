@@ -12,6 +12,7 @@
         <md-field>
           <label>상호명</label>
           <md-input v-model="contract.name" type="text" />
+          <span class="md-helper-text">상호명을 입력해주세요.</span>
         </md-field>
       </div>
 
@@ -26,6 +27,7 @@
         <md-field v-if="isSaveMode">
           <label>상세주소 입력</label>
           <md-input v-model="contract.detail" type="text" />
+          <span class="md-helper-text">상세주소를 입력해주세요.</span>
         </md-field>
       </div>
 
@@ -40,6 +42,7 @@
         <md-field>
           <label>대표명</label>
           <md-input v-model="contract.contractor" type="text"></md-input>
+          <span class="md-helper-text">대표명을 입력해주세요.</span>
         </md-field>
       </div>
 
@@ -189,16 +192,16 @@ export default {
       return this.id === -1;
     },
     isSaveStatus() {
-      return this.status === "중간저장";
+      return this.contract.status === "중간저장";
     },
     isSendStatus() {
-      return this.status === "신청";
+      return this.contract.status === "신청";
     },
     isApplyStatus() {
-      return this.status === "승인";
+      return this.contract.status === "승인";
     },
     isReSendStatus() {
-      return this.status === "반려";
+      return this.contract.status === "반려";
     }
   },
   methods: {
@@ -244,19 +247,19 @@ export default {
       this.$loadScript(
         "//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"
       )
-        .then(() => {
-          new daum.Postcode({
-            oncomplete: function(data) {
-              hello(data.zonecode, data.jibunAddress);
-            }
-          }).open();
-        })
-        .catch(() => {
-          Swal.fire({
-            icon: "error",
-            text: `카카오 주소 검색 서비스 로딩 중 에러가 있습니다.<br>잠시 후 시도해주세요.`
-          });
+      .then(() => {
+        new daum.Postcode({
+          oncomplete: function(data) {
+            hello(data.zonecode, data.jibunAddress);
+          }
+        }).open();
+      })
+      .catch(() => {
+        Swal.fire({
+          icon: "error",
+          text: `카카오 주소 검색 서비스 로딩 중 에러가 있습니다.<br>잠시 후 시도해주세요.`
         });
+      });
     },
     hello(zip, addr) {
       this.addr = `(${zip}) ${addr}`;
@@ -264,25 +267,43 @@ export default {
     async onMenuFileChange(e) {
       let files = e.target.files || e.dataTransfer.files;
 
-      const multipartFile = new FormData();
+      this.menu = files;
 
-      for (let i = 0; i < files.length; i++) {
-        multipartFile.append(`files`, files[i]);
-      }
+      // TODO : S3 관련 로직 추가
 
-      for (const key of multipartFile.entries()) {
-        console.log(`${key}`);
-      }
+      // const multipartFile = new FormData();
 
-      const hi = await axios.post(
-        "http://192.168.35.185:8080/private/contract",
-        multipartFile,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data"
-          }
-        }
-      );
+      // for (let i = 0; i < files.length; i++) {
+      //   multipartFile.append(`files`, files[i]);
+      // }
+      //
+      // for (const key of multipartFile.entries()) {
+      //   console.log(`${key}`);
+      // }
+      //
+      // const hi = await axios.post(
+      //   "http://192.168.35.185:8080/private/contract",
+      //   multipartFile,
+      //   {
+      //     headers: {
+      //       "Content-Type": "multipart/form-data"
+      //     }
+      //   }
+      // );
+    },
+    async onBusinessFileChange(e) {
+      let files = e.target.files || e.dataTransfer.files;
+
+      this.business = files;
+
+      // TODO : S3 관련 로직 추가
+    },
+    async onContractFileChange(e) {
+      let files = e.target.files || e.dataTransfer.files;
+
+      this.contract = files;
+
+      // TODO : S3 관련 로직 추가
     },
     async dis() {
       Swal.fire({
