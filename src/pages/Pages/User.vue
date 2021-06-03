@@ -17,7 +17,7 @@
               >
                 <label for="filter">권한</label>
                 <md-select
-                  v-model="search.authority"
+                  v-model="search.memberRole"
                   name="filter"
                   id="filter"
                   :disabled="this.isMiddleAdmin"
@@ -102,12 +102,16 @@ import UserFormModal from "@/pages/Modals/UserFormModal";
 import axios from "axios";
 import Spinner from "@/components/Spinner";
 import AuthorityMixin from "@/mixin/AuthorityMixin";
+import AlertMixin from "@/mixin/AlertMixin";
 
 export default {
   components: { Spinner, UserFormModal, Pagination },
-  mixins: [AuthorityMixin],
+  mixins: [AuthorityMixin, AlertMixin],
   async created() {
-    if (this.isMiddleAdmin) this.search.authority = this.userRole.GENERAL_USER;
+    if(this.isGeneralUser) {
+      this.showAlert("error", "접근 오류", "일반회원은 접근할 수 없습니다.", () => { this.$router.push('/') });
+    }
+    if (this.isMiddleAdmin) this.search.memberRole = this.userRole.GENERAL_USER;
     this.loading = true;
     try {
       const { data } = await axios.get(
@@ -134,7 +138,7 @@ export default {
       open: false,
       id: -1,
       search: {
-        authority: "",
+        memberRole: "",
         text: ""
       },
       loading: false

@@ -10,13 +10,14 @@
           :link="{ name: '내 정보', icon: 'person', path: '/info' }"
         />
         <sidebar-item
+          v-if="isChiefAdmin || isMiddleAdmin"
           :link="{ name: '회원목록', icon: 'groups', path: '/list/user' }"
         />
         <sidebar-item
           :link="{ name: '계약목록', icon: 'grid_on', path: '/list/contract' }"
         />
-        <sidebar-item
-          :link="{ name: '로그아웃', icon: 'logout', path: '/login' }"
+        <logout-sidebar-item
+          :link="{ name: '로그아웃', icon: 'logout'}"
         />
       </template>
     </side-bar>
@@ -73,12 +74,17 @@ function reinitScrollbar() {
 
 import TopNavbar from "./TopNavbar.vue";
 import { ZoomCenterTransition } from "vue2-transitions";
+import LogoutSidebarItem from "@/components/SidebarPlugin/LogoutSideBarItem";
+import AuthLayout from "@/pages/Layout/AuthLayout";
+import AuthorityMixin from "@/mixin/AuthorityMixin";
 
 export default {
   components: {
+    LogoutSidebarItem,
     TopNavbar,
     ZoomCenterTransition
   },
+  mixins: [AuthorityMixin],
   data() {
     return {
       sidebarBackgroundColor: "black",

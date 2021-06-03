@@ -59,7 +59,7 @@
       <div class="md-layout" v-if="isChiefAdmin">
         <md-field>
           <label>권한</label>
-          <md-select v-model="user.authority" :disabled="!isSaveMode">
+          <md-select v-model="user.memberRole" :disabled="!isSaveMode">
             <md-option :value="userRole.MIDDLE_ADMIN">중간관리자</md-option>
             <md-option :value="userRole.GENERAL_USER">일반관리자</md-option>
           </md-select>
@@ -179,7 +179,7 @@ export default {
       let check = true;
       if (this.isChiefAdmin) {
         check =
-          this.authority.length > 0 &&
+          this.memberRole.length > 0 &&
           (this.checkMiddleAdminInForm
             ? true
             : this.parentAdminList.length > 0);
@@ -220,7 +220,7 @@ export default {
       name: "",
       password: "",
       password2: "",
-      authority: "",
+      memberRole: "",
       tel: "",
       parentAdmin: "",
       createDate: ""
@@ -241,8 +241,8 @@ export default {
         }
       });
 
-      // TODO : 필드 유효성 -> 아이디(4자, 한글)
-      // TODO : 모달, Swal 바깥 클릭 막기
+      // TODO : 필드 유효성 전체 추가
+      // TODO : 
       if(data.userId) {
         this.showAlert("error", "중복된 아이디", "중복된 아이디 입니다.");
       }
@@ -267,7 +267,7 @@ export default {
         loginId: this.user.loginId,
         password: this.user.password,
         userNm: this.user.name,
-        userRole: this.user.authority,
+        userRole: this.user.memberRole,
         userTelNum: this.user.tel
       };
 

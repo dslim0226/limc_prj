@@ -13,7 +13,7 @@
             :duration="pageTransitionDuration"
             mode="out-in"
           >
-            <router-view></router-view>
+            <Login />
           </zoom-center-transition>
         </div>
       </div>
@@ -22,9 +22,11 @@
 </template>
 <script>
 import { ZoomCenterTransition } from "vue2-transitions";
+import Login from "@/pages/Pages/Login";
 
 export default {
   components: {
+    Login,
     ZoomCenterTransition
   },
   props: {

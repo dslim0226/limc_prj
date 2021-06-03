@@ -17,7 +17,7 @@
         </md-field>
         <md-button
           :disabled="!hasLoginData"
-          @click="login"
+          @click="loginBtn"
           slot="footer"
           class="md-simple md-success md-lg"
         >
@@ -30,13 +30,17 @@
 <script>
 import { LoginCard } from "@/components";
 import axios from "axios";
+import { mapActions } from "vuex";
+import AlertMixin from "@/mixin/AlertMixin";
+
 export default {
   components: {
     LoginCard
   },
+  mixins: [AlertMixin],
   computed: {
     hasLoginData() {
-      return this.id.length > 0 && this.password.length > 0;
+      return /^[A-Za-z0-9!~@#$%^&*()?+=\/]{4,}$/.test(this.loginId) && this.password.length > 3;
     }
   },
   data() {
@@ -46,13 +50,20 @@ export default {
     };
   },
   methods: {
-    async login() {
-      const {data} = await axios.post("http://192.168.35.102:8080/public/login", {
-        loginId: this.loginId,
-        password: this.password
-      });
+    methods: {
+      ...mapActions("login", ["login"])
+    },
+    async loginBtn() {
+      try{
+        const {data} = await axios.post("http://192.168.35.102:8080/public/login", {
+          loginId: this.loginId,
+          password: this.password
+        });
 
-
+        this.login.then(() => { this.$router.push("/"); });
+      } catch (e) {
+        this.showAlert("error", "로그인 실패", "아이디 및 비밀번호가 올바르지 않습니다.",()=>{})
+      }
     }
   }
 };

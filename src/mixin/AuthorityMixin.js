@@ -3,15 +3,15 @@ import * as userRole from "@/role";
 
 export default {
   computed: {
-    ...mapGetters("login", ["authority", "memberId"]),
+    ...mapGetters("login", ["memberRole", "memberId"]),
     isChiefAdmin() {
-      return this.authority === userRole.CHIEF_ADMIN;
+      return this.memberRole === userRole.CHIEF_ADMIN;
     },
     isMiddleAdmin() {
-      return this.authority === userRole.MIDDLE_ADMIN;
+      return this.memberRole === userRole.MIDDLE_ADMIN;
     },
     isGeneralUser() {
-      return this.authority === userRole.GENERAL_USER;
+      return this.memberRole === userRole.GENERAL_USER;
     }
   },
   data() {

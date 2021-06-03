@@ -122,7 +122,7 @@ export default {
       name: "",
       password: "",
       password2: "",
-      authority: "",
+      memberRole: "",
       tel: "",
       parentAdmin: "",
       createDate: ""

@@ -3,22 +3,20 @@
     <a
       class="nav-link sidebar-menu-item"
       data-toggle="collapse"
-      @click="open = true"
+      @click="logout"
     >
       <md-icon>{{ link.icon }}</md-icon>
       <p>
         {{ link.name }}
       </p>
     </a>
-    <my-info-modal @close="close" :open="open" />
   </component>
 </template>
 <script>
+import Swal from "sweetalert2";
 
-import MyInfoModal from "@/pages/Dashboard/Forms/MyInfoModal";
 export default {
-  name: "open-modal-sidebar-item",
-  components: { MyInfoModal },
+  name: "logout-sidebar-item",
   props: {
     link: {
       type: Object,
@@ -47,7 +45,7 @@ export default {
   data() {
     return {
       children: [],
-      open: false,
+      open: false
     };
   },
   computed: {
@@ -77,8 +75,18 @@ export default {
     }
   },
   methods: {
-    close() {
-      this.open = false;
+    logout() {
+      Swal.fire({
+        title: "로그아웃 하시겠습니까?",
+        showCancelButton: true,
+        confirmButtonText: `로그아웃`,
+        cancelButtonText: `취소`
+      }).then(result => {
+        if (result) {
+          this.$store.dispatch("login/initData");
+          this.$router.push("/login");
+        }
+      });
     }
   }
 };
