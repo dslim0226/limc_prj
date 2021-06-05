@@ -177,6 +177,8 @@ h6,
 }
 .modal-contract .modal-container {
   max-width: 50%;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 .modal-user .modal-container {
   max-width: 40%;
@@ -189,6 +191,8 @@ h6,
   }
   .modal-contract .modal-container {
     max-width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
   }
   .modal-user .modal-container {
     max-width: 90%;

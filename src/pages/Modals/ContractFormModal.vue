@@ -1,5 +1,5 @@
 <template>
-  <modal v-if="open" @close="$emit('close')" class="modal-contract">
+  <modal v-if="open" @close="$emit('close')" class="modal-contract modal-height">
     <template slot="header">
       <h4 class="modal-title">계약 정보 {{ isSaveMode ? "등록" : "수정" }}</h4>
     </template>
@@ -11,7 +11,7 @@
       <div class="md-layout">
         <md-field>
           <label>상호명</label>
-          <md-input v-model="contract.name" type="text" />
+          <md-input v-model="contract.company_nm" type="text" />
           <span class="md-helper-text">상호명을 입력해주세요.</span>
         </md-field>
       </div>
@@ -19,14 +19,14 @@
       <div class="md-layout">
         <md-field>
           <label>주소</label>
-          <md-input v-model="contract.addr" :disabled="true" type="text" />
+          <md-input v-model="contract.company_addr" :disabled="true" type="text" />
           <md-button class="md-default md-dense" @click="kakaoMap">
             <template>주소찾기</template>
           </md-button>
         </md-field>
-        <md-field v-if="isSaveMode">
+        <md-field>
           <label>상세주소 입력</label>
-          <md-input v-model="contract.detail" type="text" />
+          <md-input v-model="contract.company_addr_detail" type="text" />
           <span class="md-helper-text">상세주소를 입력해주세요.</span>
         </md-field>
       </div>
@@ -34,23 +34,23 @@
       <div class="md-layout">
         <md-field>
           <label>연락처</label>
-          <md-input v-model="contract.tel" type="text"></md-input>
+          <md-input v-model="contract.company_tel" type="text"></md-input>
         </md-field>
       </div>
 
       <div class="md-layout">
         <md-field>
           <label>대표명</label>
-          <md-input v-model="contract.contractor" type="text"></md-input>
+          <md-input v-model="contract.company_ceo" type="text"></md-input>
           <span class="md-helper-text">대표명을 입력해주세요.</span>
         </md-field>
       </div>
 
       <div class="md-layout">
         <md-field>
-          <label>사진</label>
+          <label>메뉴 사진</label>
           <md-input :disabled="true" />
-          <md-button class="md-default md-dense  md-fileinput">
+          <md-button class="md-default md-dense md-fileinput">
             <template>찾아보기</template>
             <input
               multiple
@@ -62,6 +62,10 @@
             />
           </md-button>
         </md-field>
+          <div class="files" v-for="(item, index) in contract.files.menu" :key="index">
+            {{ item["file_name"] }}
+            <md-icon>clear</md-icon>
+          </div>
       </div>
 
       <div class="md-layout">
@@ -80,6 +84,10 @@
             />
           </md-button>
         </md-field>
+          <div class="files" v-for="(item, index) in contract.files.buisness" :key="index">
+            {{ item["file_name"] }}
+            <md-icon>clear</md-icon>
+          </div>
       </div>
 
       <div class="md-layout">
@@ -98,12 +106,20 @@
             />
           </md-button>
         </md-field>
+        <div
+          class="files"
+          v-for="(item, index) in contract.files.contract"
+          :key="index"
+        >
+          {{ item["file_name"] }}
+          <md-icon>clear</md-icon>
+        </div>
       </div>
 
       <div class="md-layout" v-if="isReSendStatus">
         <md-field>
           <label>반려사유</label>
-          <md-textarea :disabled="true" v-model="contract.textarea" />
+          <md-textarea :disabled="true" v-model="contract.reject_msg" />
         </md-field>
       </div>
     </template>
@@ -151,7 +167,7 @@ export default {
   components: { Spinner, Modal },
   props: {
     id: {
-      type: Number
+      type: String
     },
     open: {
       type: Boolean
@@ -159,65 +175,71 @@ export default {
   },
   watch: {
     id: async function(id) {
-      if (id > -1) {
+      if (id !== "-1") {
         this.loading = true;
 
-        const { data } = await axiosInstance.get(
-          `https://my-json-server.typicode.com/dslim0226/test-json/contract/${id}`
-        );
+        const { data } = await axiosInstance.get(`/api/contract_info.php`, {
+          params: {
+            idx: id
+          }
+        });
 
-        this.contract = { ...this.contract, ...data };
+        this.contract = { ...this.contract, ...data["data"] };
         this.loading = false;
       }
     }
   },
   data: () => ({
     contract: {
-      id: 0,
-      name: "",
-      addr: "",
-      detail: "",
-      tel: "",
-      contractor: "",
-      menu: [],
-      business: [],
-      contract: [],
-      status: "",
-      textarea: "이 곳에 반려사유가 출력됩니다."
+      idx: 0,
+      company_nm: "",
+      company_addr: "",
+      company_addr_detail: "",
+      company_tel: "",
+      company_ceo: "",
+      insert_date: "",
+      files: [],
+      state: "",
+      state_nm: "",
+      contract_user_id: "",
+      contract_user_nm: "",
+      reject_msg: ""
     },
     loading: false
   }),
   computed: {
     isSaveMode() {
-      return this.id === -1;
+      return this.id === "-1";
     },
     isSaveStatus() {
-      return this.contract.status === "중간저장";
+      return this.contract.status === "01";
     },
     isSendStatus() {
-      return this.contract.status === "신청";
+      return this.contract.status === "02";
     },
     isApplyStatus() {
-      return this.contract.status === "승인";
+      return this.contract.status === "04";
     },
     isReSendStatus() {
-      return this.contract.status === "반려";
+      return this.contract.status === "03";
     }
   },
   methods: {
     close() {
       this.contract = {
-        id: 0,
-        name: "",
-        addr: "",
-        detail: "",
-        tel: "",
-        contractor: "",
-        menu: [],
-        business: [],
-        contract: [],
-        status: "",
-        textarea: "이 곳에 반려사유가 출력됩니다."
+        idx: 0,
+        company_nm: "",
+        company_addr: "",
+        company_addr_detail: "",
+        company_tel: "",
+        company_ceo: "",
+        insert_date: "",
+        files: [],
+        state: "",
+        state_nm: "",
+        contract_user_id: "",
+        contract_user_nm: "",
+        reject_msg: ""
       };
 
       this.$emit("close");
@@ -262,7 +284,7 @@ export default {
       });
     },
     hello(zip, addr) {
-      this.addr = `(${zip}) ${addr}`;
+      this.contract.company_addr = `(${zip}) ${addr}`;
     },
     async onMenuFileChange(e) {
       let files = e.target.files || e.dataTransfer.files;
@@ -376,5 +398,24 @@ export default {
 
 .not-modify span {
   font-weight: 400;
+}
+
+.md-layout {
+  margin-bottom: 10px;
+}
+
+.files{
+  text-align: left;
+  width:100%;
+  display: block;
+  font-size:0.8em;
+  line-height: 120%;
+}
+.files > i {
+  font-size: 0.9em!important;
+  cursor: pointer;
+  color: red!important;
+  font-weight: bold;
+  line-height: 120%;
 }
 </style>

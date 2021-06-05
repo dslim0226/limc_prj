@@ -16,11 +16,13 @@
                 class="md-layout-item md-xsmall-size-100 md-size-20 mr-5"
               >
                 <label for="filter">권한</label>
-                <md-select
-                  v-model="searchLevel"
-                  :disabled="this.isMiddleAdmin"
+                <md-select v-model="searchLevel" :disabled="this.isMiddleAdmin">
                 >
-                  <md-option v-for="(item, index) in business_cd" :key="index" :value="item['code_cd']">
+                  <md-option
+                    v-for="(item, index) in business_cd"
+                    :key="index"
+                    :value="item['code_cd']"
+                  >
                     {{ item['code_nm'] }}
                   </md-option>
                 </md-select>
@@ -80,7 +82,11 @@
               </md-table-cell>
             </md-table-row>
             <div class="no-data" v-if="tableData.length < 1">
-              {{ search.isSearching ? "검색조건에 맞는 데이터가 없습니다." : "데이터가 없습니다." }}
+              {{
+                search.isSearching
+                  ? "검색조건에 맞는 데이터가 없습니다."
+                  : "데이터가 없습니다."
+              }}
             </div>
           </md-table>
           <div class="paging">
@@ -187,7 +193,7 @@ export default {
         }
       }
     },
-    searching() {
+    async searching() {
       if(this.search.isSearching) {
         this.searchLevel = "";
         this.text = "";
@@ -196,7 +202,7 @@ export default {
       this.search.userLevel = this.searchLevel;
       this.search.text = this.text;
       this.paging.page = 1;
-      this.loadData();
+      await this.loadData();
     },
     searchEnter() {
       if(this.hasSearchText && !this.search.isSearching) {

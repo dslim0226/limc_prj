@@ -16,24 +16,25 @@
                 class="md-layout-item md-xsmall-size-100 md-size-20 mr-5"
               >
                 <label for="filter">상태</label>
-                <md-select value="search.status">
-                  <!--                  <md-option value="0">중간저장</md-option>-->
-                  <!-- 중간저장은 자신만 보이도록 (내꺼+중간저장) -->
-                  <md-option value="1">신청</md-option>
-                  <md-option value="2">승인</md-option>
-                  <md-option value="3">반려</md-option>
-                  <md-option value="4">계약종료</md-option>
+                <md-select v-model="state">
+                  <md-option
+                    v-for="(item, index) in business_cd"
+                    :key="index"
+                    :value="item['code_cd']"
+                  >
+                    {{ item["code_nm"] }}
+                  </md-option>
                 </md-select>
               </md-field>
               <md-field class="md-layout-item md-xsmall-size-100 md-size-25">
                 <label>상호명</label>
-                <md-input v-model="search.text" />
+                <md-input v-model="text" />
                 <md-button
                   :disabled="!hasSearchText"
                   @click="searching"
                   class="md-icon-button"
                 >
-                  <md-icon>search</md-icon>
+                  <md-icon>{{ search.isSearching ? "clear" : "search" }}</md-icon>
                 </md-button>
               </md-field>
             </div>
@@ -51,7 +52,7 @@
             <div class="table-header-button">
               <md-button
                 class="md-success md-dense"
-                @click="openModal(-1, 'SAVE')"
+                @click="openModal('-1')"
                 >등록</md-button
               >
             </div>
@@ -61,42 +62,59 @@
           <spinner v-if="loading" />
           <md-table v-model="tableData" table-header-color="green" v-else>
             <md-table-row slot="md-table-row" slot-scope="{ item }">
-              <md-table-cell md-label="상호명">{{ item.name }}</md-table-cell>
-              <md-table-cell md-label="주소">{{ item.addr }}</md-table-cell>
-              <md-table-cell md-label="연락처">{{ item.tel }}</md-table-cell>
-              <md-table-cell md-label="대표자명">{{
-                item.contractor
+              <md-table-cell md-label="상호명">{{
+                item["company_nm"]
               }}</md-table-cell>
-              <md-table-cell md-label="담당자">{{ item.master }}</md-table-cell>
+              <md-table-cell md-label="주소">{{
+                `${item["company_addr"]} ${item["company_addr_detail"]}`
+              }}</md-table-cell>
+              <md-table-cell md-label="연락처">{{
+                item["company_tel"]
+              }}</md-table-cell>
+              <md-table-cell md-label="대표자명">{{
+                item["company_ceo"]
+              }}</md-table-cell>
+              <md-table-cell md-label="담당자">{{
+                item["contract_user_nm"]
+              }}</md-table-cell>
               <md-table-cell md-label="메뉴판" class="text-center">{{
-                item.menu ? "O" : "X"
+                +item["menuCnt"] > 0 ? "O" : "X"
               }}</md-table-cell>
               <md-table-cell md-label="사업자등록증" class="text-center">{{
-                item.business ? "O" : "X"
+                +item["buisnessCnt"] > 0 ? "O" : "X"
               }}</md-table-cell>
               <md-table-cell md-label="계약서" class="text-center">{{
-                item.contract ? "O" : "X"
+                +item["contractCnt"] > 0 ? "O" : "X"
               }}</md-table-cell>
-              <md-table-cell md-label="상태">{{ item.status }}</md-table-cell>
+              <md-table-cell md-label="상태">{{
+                item["state_nm"]
+              }}</md-table-cell>
               <md-table-cell md-label="등록일">{{
-                item.createDate
+                item["insert_date"]
               }}</md-table-cell>
               <md-table-cell md-label="비고" style="">
                 <md-button
                   class="md-info md-icon-button"
-                  @click.native="openModal(item.id, 'MODIFY')"
+                  @click.native="openModal(item['idx'])"
                 >
                   <md-icon>edit</md-icon>
                 </md-button>
               </md-table-cell>
             </md-table-row>
+            <div class="no-data" v-if="tableData.length < 1">
+              {{
+                search.isSearching
+                  ? "검색조건에 맞는 데이터가 없습니다."
+                  : "데이터가 없습니다."
+              }}
+            </div>
           </md-table>
           <div class="paging">
             <pagination
-              :total="total"
-              :per-page="perPage"
-              v-model="currentPage"
               @input="chgPage"
+              v-model="paging.page"
+              :per-page="paging.limit"
+              :total="paging.total"
             />
           </div>
         </md-card-content>
@@ -110,75 +128,120 @@ import Pagination from "@/components/Pagination";
 import ContractFormModal from "@/pages/Modals/ContractFormModal";
 import { axiosInstance } from "@/axiosModule";
 import Spinner from "@/components/Spinner";
+import _ from "lodash";
+import AlertMixin from "@/mixin/AlertMixin";
+import AuthorityMixin from "@/mixin/AuthorityMixin";
 
 export default {
   components: { Spinner, ContractFormModal, Pagination },
+  mixins: [AlertMixin, AuthorityMixin],
   async created() {
-    this.loading = true;
-    try {
-      const { data } = await axiosInstance.get(
-        "https://my-json-server.typicode.com/dslim0226/test-json/contract"
-      );
-      this.tableData = data;
-    } catch (e) {
-      console.log(e);
-    }
+    // 검색 상태 공통코드 로드
+    const role = await axiosInstance.get("/api/common.php", {
+      params: {
+        business_cd: "SY00002"
+      }
+    });
 
+    this.business_cd = role["data"]["data"]["rows"];
+
+    this.loading = true;
+    await this.loadData();
     this.loading = false;
   },
   computed: {
     hasSearchText() {
-      return this.search.text.length > 0;
+      return this.text.length > 0 || this.state;
     }
   },
   data() {
     return {
-      id: 0,
-      currentPage: 1,
-      perPage: 10,
-      total: 88,
+      id: "-1",
+      paging: {
+        page: 1,
+        limit: 5,
+        total: 50
+      },
       tableData: [],
+      state: "",
+      text: "",
       search: {
-        userLevel: "",
-        text: ""
+        state: "",
+        text: "",
+        isSearching: false
       },
       open: false,
       modalMode: "SAVE",
-      loading: false
+      loading: false,
+      business_cd: []
     };
   },
   methods: {
-    openModal(id, mode) {
+    openModal(id) {
       this.open = true;
       this.id = id;
-      this.modalMode = mode;
     },
-    close() {
+    async close(refresh) {
       this.open = false;
-      this.modalMode = "SAVE";
-      this.modalItem = {};
+      this.id = "-1";
+      if(refresh) {
+        await this.loadData();
+      }
     },
     async searching() {
-      console.log("Not Yet");
-      // this.loading = true;
-      // const { data } = await axiosInstance.get(url);
-      //
-      // this.tableData = data;
-      // this.loading = false;
+      if (this.search.isSearching) {
+        this.state = "";
+        this.text = "";
+      }
+      this.search.isSearching = !this.search.isSearching;
+      this.search.state = this.state;
+      this.search.text = this.text;
+      this.paging.page = 1;
+      await this.loadData();
+    },
+    searchEnter() {
+      if (this.hasSearchText && !this.search.isSearching) {
+        this.searching();
+      }
     },
     async chgPage(item) {
-      // this.loading = true;
-      // const { data } = await axiosInstance.get(url, params: {
-      //  page: item
-      // });
-      //
-      // this.tableData = data;
-      // this.loading = false;
+      this.loading = true;
+      await this.loadData();
+      this.loading = false;
+    },
+    async loadData() {
+      try {
+        const param = {
+          page: this.paging.page,
+          limit: this.paging.limit,
+          state: ""
+        };
+
+        if (this.search.isSearching) {
+          if (this.search.state) param["state"] = this.search.state;
+          if (this.search.text) param["search"] = this.search.text;
+        }
+
+        const { data } = await axiosInstance.get("/api/contract.php", {
+          params: param
+        });
+
+        this.tableData = _.isEmpty(data["data"]["rows"])
+          ? []
+          : data["data"]["rows"];
+
+        this.paging.total = data["data"]["records"];
+      } catch (e) {
+        console.log(e);
+        this.showAlert("error", "접근 오류", "일시적 오류입니다.", () => {
+          this.$router.push("/");
+        });
+      } finally {
+        this.loading = false;
+      }
     }
   }
 };
-// TODO : AXIOS 연결은 목록 까지만 했음.
-// TODO : Search, Paging, my-info, 목록에서 detail 불러올떄 id 기준으로 가져올 수 있게 작업
 </script>
 <style scoped>
 .paging {
