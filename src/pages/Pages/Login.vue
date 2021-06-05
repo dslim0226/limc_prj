@@ -8,12 +8,16 @@
         <md-field class="md-form-group" slot="inputs">
           <md-icon>person</md-icon>
           <label>아이디</label>
-          <md-input v-model="loginId"></md-input>
+          <md-input v-model="loginId" @keypress.enter="loginBtn" />
         </md-field>
         <md-field class="md-form-group" slot="inputs">
           <md-icon>lock_outline</md-icon>
           <label>비밀번호</label>
-          <md-input type="password" v-model="password"></md-input>
+          <md-input
+            type="password"
+            v-model="password"
+            @keypress.enter="loginBtn"
+          />
         </md-field>
         <md-button
           :disabled="!hasLoginData"
@@ -55,6 +59,7 @@ export default {
   methods: {
     ...mapActions("login", ["memberInfo"]),
     async loginBtn() {
+      if(!this.hasLoginData) return;
       try {
         const { data } = await axiosInstance.get("/api/login.php", {
           params: {

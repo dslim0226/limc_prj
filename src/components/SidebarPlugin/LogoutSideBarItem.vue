@@ -81,8 +81,8 @@ export default {
         showCancelButton: true,
         confirmButtonText: `로그아웃`,
         cancelButtonText: `취소`
-      }).then(result => {
-        if (result) {
+      }).then(({ value }) => {
+        if (value) {
           this.$store.dispatch("login/initData");
           this.$router.push("/login");
         }

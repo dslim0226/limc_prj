@@ -15,7 +15,7 @@
           <div class="md-layout">
             <md-field>
               <label>아이디</label>
-              <md-input v-model="user.loginId" :disabled="true" />
+              <md-input v-model="user.user_id" :disabled="true" />
             </md-field>
           </div>
 
@@ -23,6 +23,7 @@
             <md-field>
               <label>비밀번호</label>
               <md-input v-model="user.password" type="password" />
+              <span class="md-helper-text">비밀번호를 수정할 경우에만 적어주세요.</span>
             </md-field>
           </div>
 
@@ -30,27 +31,21 @@
             <md-field>
               <label>비밀번호 확인</label>
               <md-input v-model="user.password2" type="password" />
+              <span class="md-helper-text">위와 같은 비밀번호를 적어주세요.</span>
             </md-field>
           </div>
 
           <div class="md-layout">
             <md-field>
               <label>이름</label>
-              <md-input v-model="user.name" />
+              <md-input v-model="user.user_nm" />
             </md-field>
           </div>
 
           <div class="md-layout">
             <md-field>
               <label>연락처</label>
-              <md-input v-model="user.tel" />
-            </md-field>
-          </div>
-
-          <div class="md-layout">
-            <md-field>
-              <label>가입일</label>
-              <md-input v-model="user.createDate" :disabled="true" />
+              <md-input v-model="user.user_hp" />
             </md-field>
           </div>
         </md-card-content>
@@ -70,6 +65,7 @@
 import { axiosInstance } from "@/axiosModule";
 import Spinner from "@/components/Spinner";
 import AlertMixin from "@/mixin/AlertMixin";
+import { mapGetters } from "vuex";
 
 export default {
   components: { Spinner },
@@ -80,6 +76,7 @@ export default {
   },
   mixins: [AlertMixin],
   computed: {
+    ...mapGetters("login", ["userId", "userLevel"]),
     checkPassword() {
       const pw = this.user.password;
       const pw2 = this.user.password2;
@@ -87,7 +84,7 @@ export default {
     },
     isChangeData() {
       return (
-        this.backup.name !== this.user.name || this.backup.tel !== this.user.tel
+        this.backup.user_nm !== this.user.user_nm || this.backup.user_hp !== this.user.user_hp
       );
     },
     validateModify() {
@@ -95,36 +92,24 @@ export default {
     }
   },
   async created() {
-    this.loading = true;
-
-    try {
-      const { data } = await axiosInstance.get(
-        "https://my-json-server.typicode.com/dslim0226/test-json/user/1"
-      );
-      this.user = { ...this.user, ...data };
-      this.backup.name = data.name;
-      this.backup.tel = data.tel;
-    } catch (e) {
-      console.log(e);
-    }
-
-    this.loading = false;
+    await this.getInfo();
   },
   data: () => ({
     backup: {
-      name: "",
-      tel: ""
+      user_nm: "",
+      user_hp: ""
     },
     user: {
-      userId: "",
-      loginId: "",
-      name: "",
+      user_id: "",
+      user_nm: "",
+      user_hp: "",
+      user_pw: "",
+      user_level_nm: "",
+      user_level: "",
+      parent_user_nm: "",
+      parent_user: "",
       password: "",
-      password2: "",
-      userLevel: "",
-      tel: "",
-      parentAdmin: "",
-      createDate: ""
+      password2: ""
     },
     loading: false,
     modifyText: {
@@ -133,25 +118,43 @@ export default {
     }
   }),
   methods: {
+    async getInfo() {
+      this.loading = true;
+      try {
+        const { data } = await axiosInstance.get("/api/sy_user_info.php", {
+          params: {
+            user_id: this.userId
+          }
+        });
+        this.user = { ...this.user, ...data["data"] };
+        this.backup.user_nm = data["data"]["user_nm"];
+        this.backup.user_hp = data["data"]["user_hp"];
+      } catch (e) {
+        console.log(e);
+      } finally {
+        this.loading = false;
+      }
+    },
     async modify() {
       let body = {
-        userId: this.user.userId,
-        name: this.user.name,
-        tel: this.user.tel
+        mode: "EDIT",
+        login_level: this.userLevel,
+        login_id: this.userId,
+        ...this.user
       };
-
-      if (this.checkPassword) {
-        body.password = this.password;
-      }
+      body["user_pw"] =
+        this.checkPassword && this.user.user_pw !== this.user.password
+          ? this.user.password
+          : this.user.user_pw;
 
       try {
-        // const { data } = await axiosInstance.put("/private/User", body);
+        await axiosInstance.post("/api/sy_user_action.php", body);
 
         this.showAlert(
           "success",
           "수정 성공",
           "회원 정보가 수정되었습니다!",
-          () => {}
+          () => {this.getInfo()}
         );
       } catch (e) {
         this.showAlert(

@@ -17,7 +17,7 @@
             :disabled="!isSaveMode"
           />
           <span class="md-helper-text"
-            >영문 및 숫자를 포함한 4자리 이상 아이디를 적어주세요.</span
+          >영문 및 숫자를 포함한 4자리 이상 아이디를 적어주세요.</span
           >
           <md-button
             v-if="isSaveMode"
@@ -43,7 +43,7 @@
           <label>비밀번호</label>
           <md-input v-model="user.password" type="password"></md-input>
           <span class="md-helper-text"
-            >4자리 이상의 비밀번호를 적어주세요.</span
+          >4자리 이상의 비밀번호를 적어주세요.</span
           >
         </md-field>
       </div>
@@ -67,8 +67,12 @@
         <md-field>
           <label>권한</label>
           <md-select v-model="user.user_level" :disabled="!isSaveMode">
-            <md-option v-for="(item, index) in business_cd" :key="index" :value="item['code_cd']">
-              {{ item['code_nm'] }}
+            <md-option
+              v-for="(item, index) in business_cd"
+              :key="index"
+              :value="item['code_cd']"
+            >
+              {{ item["code_nm"] }}
             </md-option>
           </md-select>
         </md-field>
@@ -82,7 +86,8 @@
               v-for="(item, index) in parentAdminList"
               :value="item.user_id"
               :key="index"
-              >{{ `${item.user_nm}(${item.user_id})` }}</md-option
+            >{{ `${item.user_nm}(${item.user_id})` }}
+            </md-option
             >
           </md-select>
         </md-field>
@@ -105,18 +110,24 @@
         </div>
         <div>
           <md-button
+            class="md-danger md-dense"
+            v-if="!isSaveMode && isChiefAdmin"
+            @click="deleteUser"
+          >삭제
+          </md-button>
+          <md-button
             class="md-success md-dense"
             :disabled="!validateCreate"
             v-if="isSaveMode"
             @click="createUser"
-            >생성
+          >생성
           </md-button>
           <md-button
             class="md-success md-dense"
             :disabled="!isChangeData"
             v-else-if="!isSaveMode"
             @click="updateUser"
-            >수정
+          >수정
           </md-button>
         </div>
       </md-card-actions>
@@ -131,10 +142,11 @@ import { axiosInstance } from "@/axiosModule";
 import Spinner from "@/components/Spinner";
 import AuthorityMixin from "@/mixin/AuthorityMixin";
 import AlertMixin from "@/mixin/AlertMixin";
+import Swal from "sweetalert2";
 
 export default {
   async created() {
-    if(this.isMiddleAdmin) {
+    if (this.isMiddleAdmin) {
       this.user.user_level = this.userRole.GENERAL_USER;
     }
     // 일반관리자 생성 시 중간관리자 목록 리스트
@@ -190,7 +202,10 @@ export default {
     },
     validateCreate() {
       let check = true;
-      if (this.isChiefAdmin && this.user.user_level === this.userRole.GENERAL_USER) {
+      if (
+        this.isChiefAdmin &&
+        this.user.user_level === this.userRole.GENERAL_USER
+      ) {
         check = !!this.user.parent_user;
       }
 
@@ -236,6 +251,7 @@ export default {
       user_id: "",
       user_nm: "",
       user_hp: "",
+      user_pw: "",
       user_level_nm: "",
       user_level: "",
       parent_user_nm: "",
@@ -273,15 +289,12 @@ export default {
     },
     async updateUser() {
       try {
-        const { data } = await axiosInstance.put("/api/sy_user_info.php", {
+        const { data } = await axiosInstance.post("/api/sy_user_action.php", {
+          mode: "EDIT",
           login_level: this.userLevel,
           login_id: this.userId,
-          userId: this.user.user_id,
-          name: this.user.user_nm,
-          tel: this.user.user_hp
+          ...this.user
         });
-
-        console.log(data);
 
         this.showAlert(
           "success",
@@ -294,19 +307,22 @@ export default {
           "error",
           "수정 실패",
           "회원 정보 수정 중 오류가 발생했습니다.",
-          () => {}
+          () => {
+          }
         );
       }
     },
     async createUser() {
       const body = {
+        mode: "ADD",
         login_level: this.userLevel,
         login_id: this.userId,
         user_id: this.user.user_id,
         user_pw: this.user.password,
         user_nm: this.user.user_nm,
         user_level: this.user.user_level,
-        user_hp: this.user.user_hp
+        user_hp: this.user.user_hp,
+        parent_user: ""
       };
 
       // 최고 관리자가 일반 유저를 생성하는 경우에
@@ -319,8 +335,8 @@ export default {
       // 생성할 수 있는 유저 권한은 GENERAL_USER 뿐이고
       // 부모는 자기 자신의 memberId 로 한다.
       if (this.isMiddleAdmin) {
-        body["userRole"] = this.userRole.GENERAL_USER;
-        body["parentAdmin"] = this.userId;
+        body["user_level"] = this.userRole.GENERAL_USER;
+        body["parent_user"] = this.userId;
       }
 
       try {
@@ -336,9 +352,45 @@ export default {
           "error",
           "생성 실패",
           "회원 정보 생성 중 오류가 발생했습니다.",
-          () => {}
+          () => {
+          }
         );
       }
+    },
+    async deleteUser() {
+      Swal.fire({
+        title: "해당 유저를 삭제하시겠습니까?",
+        showCancelButton: true,
+        confirmButtonText: `삭제`,
+        cancelButtonText: `취소`
+      }).then(async ({ value }) => {
+        if (value) {
+          try {
+            const body = {
+              mode: "DEL",
+              login_level: this.userLevel,
+              login_id: this.userId,
+              ...this.user
+            };
+            await axiosInstance.post("/api/sy_user_action.php", body);
+
+            this.showAlert(
+              "success",
+              "삭제 완료",
+              "회원 정보가 삭제되었습니다!",
+              this.close(true)
+            );
+          } catch (e) {
+            this.showAlert(
+              "error",
+              "삭제 실패",
+              "회원 정보 삭제 중 오류가 발생했습니다.",
+              () => {
+              }
+            );
+          }
+        }
+      });
     },
     init() {
       this.user = {

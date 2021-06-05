@@ -52,7 +52,7 @@ axiosInstance.interceptors.request.use(
       login_id: store.state.login.userId,
       login_level: store.state.login.userLevel
     };
-    if (userInfo.login_id && userInfo.login_level) {
+    if (userInfo.login_id && userInfo.login_level && config.method === "get") {
       config.params = { ...config.params, ...userInfo };
     }
     return config;

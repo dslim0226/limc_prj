@@ -233,6 +233,8 @@ export default {
       } catch (e) {
         console.log(e);
         this.showAlert("error", "접근 오류", "일시적 오류입니다.", () => { this.$router.push('/') });
+      } finally {
+        this.loading = false;
       }
 
     },
