@@ -1,8 +1,5 @@
 <template>
-  <modal
-    v-if="open"
-    class="modal-contract modal-height"
-  >
+  <modal v-if="open" class="modal-contract modal-height">
     <template slot="header">
       <h4 class="modal-title">계약 정보 {{ isSaveMode ? "등록" : "수정" }}</h4>
     </template>
@@ -14,7 +11,11 @@
       <div class="md-layout">
         <md-field>
           <label>상호명</label>
-          <md-input v-model="contract.company_nm" type="text" />
+          <md-input
+            :disabled="diffId"
+            v-model="contract.company_nm"
+            type="text"
+          />
           <span class="md-helper-text">상호명을 입력해주세요.</span>
         </md-field>
       </div>
@@ -27,13 +28,21 @@
             :disabled="true"
             type="text"
           />
-          <md-button class="md-default md-dense" @click="kakaoMap">
+          <md-button
+            :disabled="diffId"
+            class="md-default md-dense"
+            @click="kakaoMap"
+          >
             <template>주소찾기</template>
           </md-button>
         </md-field>
         <md-field>
           <label>상세주소 입력</label>
-          <md-input v-model="contract.company_addr_detail" type="text" />
+          <md-input
+            :disabled="diffId"
+            v-model="contract.company_addr_detail"
+            type="text"
+          />
           <span class="md-helper-text">상세주소를 입력해주세요.</span>
         </md-field>
       </div>
@@ -41,14 +50,22 @@
       <div class="md-layout">
         <md-field>
           <label>연락처</label>
-          <md-input v-model="contract.company_tel" type="text"></md-input>
+          <md-input
+            :disabled="diffId"
+            v-model="contract.company_tel"
+            type="text"
+          />
         </md-field>
       </div>
 
       <div class="md-layout">
         <md-field>
           <label>대표명</label>
-          <md-input v-model="contract.company_ceo" type="text"></md-input>
+          <md-input
+            :disabled="diffId"
+            v-model="contract.company_ceo"
+            type="text"
+          />
           <span class="md-helper-text">대표명을 입력해주세요.</span>
         </md-field>
       </div>
@@ -57,7 +74,10 @@
         <md-field>
           <label>메뉴 사진</label>
           <md-input :disabled="true" />
-          <md-button class="md-default md-dense md-fileinput">
+          <md-button
+            :disabled="diffId"
+            class="md-default md-dense md-fileinput"
+          >
             <template>찾아보기</template>
             <input
               multiple
@@ -76,6 +96,7 @@
         >
           {{ item["name"] }}
           <md-button
+            v-if="!(diffId || isApplyStatus)"
             @click="deleteCurrentFile(item['lastModified'], 'menu')"
             class="md-icon-button"
           >
@@ -89,6 +110,7 @@
         >
           {{ item["file_name"] }}
           <md-button
+            v-if="!(diffId || isApplyStatus)"
             @click="deleteFile(item['idx'], 'menu')"
             class="md-icon-button"
           >
@@ -101,7 +123,10 @@
         <md-field>
           <label>사업자등록증</label>
           <md-input :disabled="true" />
-          <md-button class="md-default md-dense  md-fileinput">
+          <md-button
+            :disabled="diffId"
+            class="md-default md-dense md-fileinput"
+          >
             <template>찾아보기</template>
             <input
               multiple
@@ -120,6 +145,7 @@
         >
           {{ item["name"] }}
           <md-button
+            v-if="!(diffId || isApplyStatus)"
             @click="deleteCurrentFile(item['lastModified'], 'buiness')"
             class="md-icon-button"
           >
@@ -133,6 +159,7 @@
         >
           {{ item["file_name"] }}
           <md-button
+            v-if="!(diffId || isApplyStatus)"
             @click="deleteFile(item['idx'], 'buisness')"
             class="md-icon-button"
           >
@@ -145,7 +172,10 @@
         <md-field>
           <label>계약서</label>
           <md-input :disabled="true" />
-          <md-button class="md-default md-dense  md-fileinput">
+          <md-button
+            :disabled="diffId"
+            class="md-default md-dense  md-fileinput"
+          >
             <template>찾아보기</template>
             <input
               multiple
@@ -164,6 +194,7 @@
         >
           {{ item["name"] }}
           <md-button
+            v-if="!(diffId || isApplyStatus)"
             @click="deleteCurrentFile(item['lastModified'], 'contract')"
             class="md-icon-button"
           >
@@ -177,6 +208,7 @@
         >
           {{ item["file_name"] }}
           <md-button
+            v-if="!(diffId || isApplyStatus)"
             @click="deleteFile(item['idx'], 'contract')"
             class="md-icon-button"
           >
@@ -203,7 +235,8 @@
         <div
           v-if="
             (isSaveStatus || isSaveMode) &&
-              (this.isGeneralUser || this.isMiddleAdmin)
+              (this.isGeneralUser || this.isMiddleAdmin) &&
+              !diffId
           "
         >
           <md-button @click="save('01')" class="md-info md-dense">
@@ -214,15 +247,15 @@
           </md-button>
         </div>
         <div v-else-if="isSendStatus">
-          <md-button class="md-success md-dense">
+          <md-button class="md-success md-dense" @click="apply">
             승인
           </md-button>
-          <md-button class="md-danger md-dense" @click.native="dis">
+          <md-button class="md-danger md-dense" @click="dis">
             반려
           </md-button>
         </div>
-        <div v-else-if="isReSendStatus">
-          <md-button class="md-success md-dense">
+        <div v-else-if="isReSendStatus && !isChiefAdmin && !diffId">
+          <md-button class="md-success md-dense" @click="save('02')">
             재요청
           </md-button>
         </div>
@@ -289,6 +322,9 @@ export default {
     loading: false
   }),
   computed: {
+    diffId() {
+      return this.contract.contract_user_id !== this.userId;
+    },
     isSaveMode() {
       return this.id === "-1";
     },
@@ -346,7 +382,6 @@ export default {
         login_level: this.userLevel
       };
 
-
       if (this.contract.idx !== "-1") {
         body["idx"] = ct.idx;
         body["file_del_list"] = ct.file_del_list;
@@ -360,19 +395,19 @@ export default {
 
       if (ct.menuFiles !== []) {
         for (const item of ct.menuFiles) {
-          form_data.append("menuFiles", item);
+          form_data.append("menuFiles[]", item);
         }
       }
 
       if (ct.buisnessFiles !== []) {
         for (const item of ct.buisnessFiles) {
-          form_data.append("buisnessFiles", item);
+          form_data.append("buisnessFiles[]", item);
         }
       }
 
       if (ct.contractFiles !== []) {
         for (const item of ct.contractFiles) {
-          form_data.append("contractFiles", item);
+          form_data.append("contractFiles[]", item);
         }
       }
 
@@ -393,39 +428,28 @@ export default {
           "error",
           "저장 실패",
           "계약 정보 저장중 오류가 발생했습니다.",
-          () => {
-          }
+          () => {}
         );
       }
-    },
-    send() {
-      Swal.fire({
-        title: `신청 완료`,
-        text: "신청이 완료되었습니다.",
-        confirmButtonClass: "md-button md-success",
-        type: "success"
-      }).then(() => {
-        this.close();
-      });
     },
     kakaoMap() {
       const hello = this.hello;
       this.$loadScript(
         "//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"
       )
-      .then(() => {
-        new daum.Postcode({
-          oncomplete: function(data) {
-            hello(data.zonecode, data.jibunAddress);
-          }
-        }).open();
-      })
-      .catch(() => {
-        Swal.fire({
-          icon: "error",
-          text: `카카오 주소 검색 서비스 로딩 중 에러가 있습니다.<br>잠시 후 시도해주세요.`
+        .then(() => {
+          new daum.Postcode({
+            oncomplete: function(data) {
+              hello(data.zonecode, data.jibunAddress);
+            }
+          }).open();
+        })
+        .catch(() => {
+          Swal.fire({
+            icon: "error",
+            text: `카카오 주소 검색 서비스 로딩 중 에러가 있습니다.<br>잠시 후 시도해주세요.`
+          });
         });
-      });
     },
     hello(zip, addr) {
       this.contract.company_addr = `(${zip}) ${addr}`;
@@ -452,21 +476,74 @@ export default {
         ...filesArray
       ];
     },
+    async apply() {
+      Swal.fire({
+        title: "해당 계약건을 승인하시겠습니까?",
+        showCancelButton: true,
+        confirmButtonText: `승인`,
+        cancelButtonText: `취소`
+      }).then(async ({ value }) => {
+        if (value) {
+          try {
+            await axiosInstance.get("/api/contract_state.php", {
+              params: {
+                idx: this.contract.idx,
+                state: "04",
+                reject_msg: ""
+              }
+            });
+
+            this.showAlert(
+              "success",
+              "승인 완료",
+              "해당 계약건이 승인되었습니다!",
+              this.close(true)
+            );
+          } catch (e) {
+            this.showAlert(
+              "error",
+              "승인 실패",
+              "해당 계약건 승인중 오류가 발생했습니다.",
+              () => {}
+            );
+          }
+        }
+      });
+    },
     async dis() {
       Swal.fire({
         title: `반려사유를 작성해주세요.`,
         input: "textarea",
         inputLabel: "Message",
-        showCancelButton: true
-      }).then(() => {
-        Swal.fire({
-          title: `반려 완료`,
-          text: "해당 계약건이 반려되었습니다.",
-          confirmButtonClass: "md-button md-success",
-          type: "success"
-        }).then(() => {
-          this.$router.push({ path: "/list/contract" });
-        });
+        showCancelButton: true,
+        confirmButtonText: `반려`,
+        cancelButtonText: `취소`
+      }).then(async ({ dismiss, value }) => {
+        if (dismiss !== "cancel") {
+          try {
+            await axiosInstance.get("/api/contract_state.php", {
+              params: {
+                idx: this.contract.idx,
+                state: "03",
+                reject_msg: value
+              }
+            });
+
+            this.showAlert(
+              "success",
+              "반려 완료",
+              "해당 계약건이 반려되었습니다.",
+              this.close(true)
+            );
+          } catch (e) {
+            this.showAlert(
+              "error",
+              "반려 실패",
+              "해당 계약건 반려 중 오류가 발생했습니다.",
+              () => {}
+            );
+          }
+        }
       });
     },
     deleteCurrentFile(id, type) {
