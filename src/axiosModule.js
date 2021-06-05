@@ -4,19 +4,21 @@ import Swal from "sweetalert2";
 
 const showAlert = (title, text, callback) => {
   Swal.fire({
-    icon: 'error',
+    icon: "error",
     title: title,
     text: text,
     allowOutsideClick: false
   }).then(callback);
 };
 
+// TODO : 최종 작업시 baseURL 없애기
+// accessToken 존재 하지 않으므로 user_id 나 user_level 이 존재할 경우 담아 보내기(없을 경우 로그인 해제?)
 export const axiosInstance = axios.create({
-  baseURL: "http://kokimin7805.cafe24.com/",
+  baseURL: "http://kokimin7805.cafe24.com",
   timeout: 60000,
   headers: {
     "Content-Type": "application/json",
-    accept: "application/json",
+    accept: "application/json"
     // "Access-Control-Allow-Methods": "*"
   }
 });
@@ -38,11 +40,7 @@ axiosInstance.interceptors.response.use(
         }
       );
     } else if (status === 500) {
-      showAlert(
-        "오류",
-        "관리자에게 문의해주세요.",
-        () => {}
-      );
+      showAlert("오류", "관리자에게 문의해주세요.", () => {});
     }
     return Promise.reject(error);
   }
@@ -50,9 +48,12 @@ axiosInstance.interceptors.response.use(
 
 axiosInstance.interceptors.request.use(
   function(config) {
-    const token = store.state.login.accessToken;
-    if (config.url.includes("private") && token !== "") {
-      config.headers.Authorization = `Bearer ${token}`;
+    const userInfo = {
+      login_id: store.state.login.userId,
+      login_level: store.state.login.userLevel
+    };
+    if (userInfo.login_id && userInfo.login_level) {
+      config.params = { ...config.params, ...userInfo };
     }
     return config;
   },

@@ -17,15 +17,12 @@
               >
                 <label for="filter">권한</label>
                 <md-select
-                  v-model="search.userLevel"
+                  v-model="userLevel"
                   :disabled="this.isMiddleAdmin"
                 >
-                  <md-option :value="userRole.MIDDLE_ADMIN" v-if="isChiefAdmin"
-                    >중간관리자</md-option
-                  >
-                  <md-option :value="userRole.GENERAL_USER"
-                    >일반관리자</md-option
-                  >
+                  <md-option v-for="(item, index) in business_cd" :key="index" :value="item['code_cd']">
+                    {{ item['code_nm'] }}
+                  </md-option>
                 </md-select>
               </md-field>
               <md-field
@@ -33,8 +30,12 @@
                 style="padding-right:0;"
               >
                 <label>아이디 / 이름</label>
-                <md-input v-model="search.text" />
-                <md-button :disabled="!hasSearchText" class="md-icon-button">
+                <md-input v-model="text" />
+                <md-button
+                  @click="searching"
+                  :disabled="!hasSearchText"
+                  class="md-icon-button"
+                >
                   <md-icon>search</md-icon>
                 </md-button>
               </md-field>
@@ -51,7 +52,7 @@
           <h4 class="title">
             회원 목록
             <div class="table-header-button">
-              <md-button class="md-success md-dense" @click="openModal(-1)"
+              <md-button class="md-success md-dense" @click="openModal('-1')"
                 >등록</md-button
               >
             </div>
@@ -62,19 +63,17 @@
           <md-table v-model="tableData" table-header-color="green">
             <md-table-row slot="md-table-row" slot-scope="{ item }">
               <md-table-cell md-label="아이디">{{
-                item.loginId
+                item["user_id"]
               }}</md-table-cell>
-              <md-table-cell md-label="이름">{{ item.name }}</md-table-cell>
-              <md-table-cell md-label="전화번호">{{ item.tel }}</md-table-cell>
-              <md-table-cell md-label="권한">{{ item.role }}</md-table-cell>
-              <md-table-cell md-label="관리자">{{ item.master }}</md-table-cell>
-              <md-table-cell md-label="가입일"
-                >{{ item.createDate }}
-              </md-table-cell>
+              <md-table-cell md-label="이름">{{ item["user_nm"] }}</md-table-cell>
+              <md-table-cell md-label="전화번호">{{ item["user_hp"] }}</md-table-cell>
+              <md-table-cell md-label="권한">{{ item["user_level_nm"] }}</md-table-cell>
+              <md-table-cell md-label="관리자">{{ item["parent_user_nm"] }}</md-table-cell>
+              <md-table-cell md-label="가입일">{{ item["insert_date"] }}</md-table-cell>
               <md-table-cell md-label="수정" style="">
                 <md-button
                   class="md-primary md-fab md-icon-button"
-                  @click.native="openModal(item.id)"
+                  @click="openModal(item['user_id'])"
                 >
                   <md-icon>edit</md-icon>
                 </md-button>
@@ -83,15 +82,16 @@
           </md-table>
           <div class="paging">
             <pagination
-              v-model="currentPage"
-              :per-page="perPage"
-              :total="total"
+              @input="chgPage"
+              v-model="paging.page"
+              :per-page="paging.limit"
+              :total="paging.total"
             />
           </div>
         </md-card-content>
       </md-card>
     </div>
-    <user-form-modal @close="close" :id="id" :open="open" />
+    <user-form-modal @close="close" :id="id" :open="open" :business_cd="business_cd" />
   </div>
 </template>
 <script>
@@ -105,42 +105,53 @@ import { axiosInstance } from "@/axiosModule";
 export default {
   components: { Spinner, UserFormModal, Pagination },
   mixins: [AuthorityMixin, AlertMixin],
+
   async created() {
+    // 일반 유저 접근 금지
     if(this.isGeneralUser) {
       this.showAlert("error", "접근 오류", "일반회원은 접근할 수 없습니다.", () => { this.$router.push('/') });
     }
-    if (this.isMiddleAdmin) this.search.userLevel = this.userRole.GENERAL_USER;
-    this.loading = true;
-    try {
-      // TODO : 페이징 추가
-      const { data } = await axiosInstance.get(
-        "https://my-json-server.typicode.com/dslim0226/test-json/user"
-      );
-      this.tableData = data;
-    } catch (e) {
-      this.showAlert("error", "접근 오류", "일시적 오류입니다.", () => { this.$router.push('/') });
-    }
 
+    // 검색 권한 공통코드 로드
+    const role = await axiosInstance.get("/api/common.php", {
+      params: {
+        business_cd: "SY00001"
+      }
+    });
+
+    this.business_cd = role["data"]["data"]["rows"];
+
+    // 중간관리자인 경우엔 일반관리자만 검색할 수 있게 하는 로직
+    if (this.isMiddleAdmin) this.searchLevel = this.userRole.GENERAL_USER;
+
+    this.loading = true;
+    await this.loadData();
     this.loading = false;
   },
   computed: {
     hasSearchText() {
-      return this.search.text.length > 0;
+      return this.text.length > 0 && this.searchLevel;
     }
   },
   data() {
     return {
-      currentPage: 1,
-      perPage: 10,
-      total: 50,
+      paging: {
+        page: 1,
+        limit: 5,
+        total: 50
+      },
       tableData: [],
       open: false,
-      id: -1,
+      id: "-1",
+      userLevel: "",
+      text: "",
       search: {
-        userLevel: "",
-        text: ""
+        searchLevel: "",
+        text: "",
+        isSearching: false
       },
-      loading: false
+      loading: false,
+      business_cd: []
     };
   },
   methods: {
@@ -148,22 +159,64 @@ export default {
       this.open = true;
       this.id = id;
     },
-    close() {
+    async close(refresh) {
       this.open = false;
-      this.id = -1;
+      this.id = "-1";
+      if(refresh) {
+        this.loading = true;
+        try {
+          const param = {
+            page: this.paging.page,
+            limit: this.paging.limit
+          }
+          const { data } = await axiosInstance.get("/api/sy_user.php", {
+            params : param
+          });
+
+          this.tableData = data["data"]["rows"];
+          this.paging.total = data["data"]["records"];
+        } catch (e) {
+          this.showAlert("error", "접근 오류", "일시적 오류입니다.", () => { this.$router.push('/') });
+        } finally {
+          this.loading = false;
+        }
+      }
     },
     searching() {
-      // TODO: paging 추가
+      this.search.userLevel = this.searchLevel;
+      this.search.text = this.text;
+      this.search.isSearching = true;
+      this.paging.page = 1;
+      this.loadData();
     },
     async chgPage(item) {
-      // this.loading = true;
-      // const { data } = await axiosInstance.get(url, params: {
-      //  page: item
-      // });
-      //
-      // this.tableData = data;
-      // this.loading = false;
-    }
+      this.loading = true;
+      await this.loadData();
+      this.loading = false;
+    },
+    async loadData() {
+      try {
+        const param = {
+          page: this.paging.page,
+          limit: this.paging.limit
+        }
+
+        if(this.search.isSearching) {
+          param["search_nm"] = this.search.text;
+          param["user_level"] = this.search.userLevel;
+        }
+
+        const { data } = await axiosInstance.get("/api/sy_user.php", {
+          params : param
+        });
+
+        this.tableData = data["data"]["rows"];
+        this.paging.total = data["data"]["records"];
+      } catch (e) {
+        this.showAlert("error", "접근 오류", "일시적 오류입니다.", () => { this.$router.push('/') });
+      }
+
+    },
   }
 };
 </script>
