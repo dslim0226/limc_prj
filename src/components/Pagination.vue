@@ -138,7 +138,8 @@ export default {
       this.$emit("input", 1);
     },
     total() {
-      this.$emit("input", 1);
+      // 이거 사용하는 용도 확인 필요 이거 때문에 로딩 2번 됨
+      // this.$emit("input", 1);
     }
   }
 };

@@ -219,7 +219,7 @@ export default {
 
         if (this.search.isSearching) {
           if (this.search.state) param["state"] = this.search.state;
-          if (this.search.text) param["search"] = this.search.text;
+          if (this.search.text) param["search_nm"] = this.search.text;
         }
 
         const { data } = await axiosInstance.get("/api/contract.php", {
