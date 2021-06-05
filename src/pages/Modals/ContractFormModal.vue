@@ -1,5 +1,8 @@
 <template>
-  <modal v-if="open" @close="$emit('close')" class="modal-contract modal-height">
+  <modal
+    v-if="open"
+    class="modal-contract modal-height"
+  >
     <template slot="header">
       <h4 class="modal-title">계약 정보 {{ isSaveMode ? "등록" : "수정" }}</h4>
     </template>
@@ -19,7 +22,11 @@
       <div class="md-layout">
         <md-field>
           <label>주소</label>
-          <md-input v-model="contract.company_addr" :disabled="true" type="text" />
+          <md-input
+            v-model="contract.company_addr"
+            :disabled="true"
+            type="text"
+          />
           <md-button class="md-default md-dense" @click="kakaoMap">
             <template>주소찾기</template>
           </md-button>
@@ -62,10 +69,32 @@
             />
           </md-button>
         </md-field>
-          <div class="files" v-for="(item, index) in contract.files.menu" :key="index">
-            {{ item["file_name"] }}
+        <div
+          class="files"
+          v-for="(item, index) in contract.menuFiles"
+          :key="index"
+        >
+          {{ item["name"] }}
+          <md-button
+            @click="deleteCurrentFile(item['lastModified'], 'menu')"
+            class="md-icon-button"
+          >
             <md-icon>clear</md-icon>
-          </div>
+          </md-button>
+        </div>
+        <div
+          class="files"
+          v-for="(item, index) in contract.files.menu"
+          :key="index"
+        >
+          {{ item["file_name"] }}
+          <md-button
+            @click="deleteFile(item['idx'], 'menu')"
+            class="md-icon-button"
+          >
+            <md-icon>clear</md-icon>
+          </md-button>
+        </div>
       </div>
 
       <div class="md-layout">
@@ -79,15 +108,37 @@
               accept="image/*"
               type="file"
               name="circle"
-              @change="onMenuFileChange"
+              @change="onBusinessFileChange"
               capture="camera"
             />
           </md-button>
         </md-field>
-          <div class="files" v-for="(item, index) in contract.files.buisness" :key="index">
-            {{ item["file_name"] }}
+        <div
+          class="files"
+          v-for="(item, index) in contract.buisnessFiles"
+          :key="index"
+        >
+          {{ item["name"] }}
+          <md-button
+            @click="deleteCurrentFile(item['lastModified'], 'buiness')"
+            class="md-icon-button"
+          >
             <md-icon>clear</md-icon>
-          </div>
+          </md-button>
+        </div>
+        <div
+          class="files"
+          v-for="(item, index) in contract.files.buisness"
+          :key="index"
+        >
+          {{ item["file_name"] }}
+          <md-button
+            @click="deleteFile(item['idx'], 'buisness')"
+            class="md-icon-button"
+          >
+            <md-icon>clear</md-icon>
+          </md-button>
+        </div>
       </div>
 
       <div class="md-layout">
@@ -101,18 +152,36 @@
               accept="image/*"
               type="file"
               name="circle"
-              @change="onMenuFileChange"
+              @change="onContractFileChange"
               capture="camera"
             />
           </md-button>
         </md-field>
         <div
           class="files"
+          v-for="(item, index) in contract.contractFiles"
+          :key="index"
+        >
+          {{ item["name"] }}
+          <md-button
+            @click="deleteCurrentFile(item['lastModified'], 'contract')"
+            class="md-icon-button"
+          >
+            <md-icon>clear</md-icon>
+          </md-button>
+        </div>
+        <div
+          class="files"
           v-for="(item, index) in contract.files.contract"
           :key="index"
         >
           {{ item["file_name"] }}
-          <md-icon>clear</md-icon>
+          <md-button
+            @click="deleteFile(item['idx'], 'contract')"
+            class="md-icon-button"
+          >
+            <md-icon>clear</md-icon>
+          </md-button>
         </div>
       </div>
 
@@ -127,15 +196,20 @@
     <template slot="footer">
       <md-card-actions md-alignment="space-between">
         <div>
-          <md-button @click="close" class="md-default md-dense">
+          <md-button @click="close(false)" class="md-default md-dense">
             닫기
           </md-button>
         </div>
-        <div v-if="isSaveStatus || isSaveMode">
-          <md-button @click="save" class="md-info md-dense">
+        <div
+          v-if="
+            (isSaveStatus || isSaveMode) &&
+              (this.isGeneralUser || this.isMiddleAdmin)
+          "
+        >
+          <md-button @click="save('01')" class="md-info md-dense">
             중간저장
           </md-button>
-          <md-button @click="send" class="md-success md-dense">
+          <md-button @click="save('02')" class="md-success md-dense">
             신청
           </md-button>
         </div>
@@ -162,9 +236,12 @@ import Swal from "sweetalert2";
 import { axiosInstance } from "@/axiosModule";
 import Modal from "@/components/Modal";
 import Spinner from "@/components/Spinner";
+import AlertMixin from "@/mixin/AlertMixin";
+import AuthorityMixin from "@/mixin/AuthorityMixin";
 
 export default {
   components: { Spinner, Modal },
+  mixins: [AlertMixin, AuthorityMixin],
   props: {
     id: {
       type: String
@@ -184,26 +261,30 @@ export default {
           }
         });
 
-        this.contract = { ...this.contract, ...data["data"] };
+        this.contract = { ...this.contract, ...data["data"], idx: id };
         this.loading = false;
       }
     }
   },
   data: () => ({
     contract: {
-      idx: 0,
+      idx: "-1",
       company_nm: "",
       company_addr: "",
       company_addr_detail: "",
       company_tel: "",
       company_ceo: "",
       insert_date: "",
-      files: [],
+      files: {},
+      menuFiles: [],
+      buisnessFiles: [],
+      contractFiles: [],
       state: "",
       state_nm: "",
       contract_user_id: "",
       contract_user_nm: "",
-      reject_msg: ""
+      reject_msg: "",
+      file_del_list: []
     },
     loading: false
   }),
@@ -212,47 +293,110 @@ export default {
       return this.id === "-1";
     },
     isSaveStatus() {
-      return this.contract.status === "01";
+      return this.contract.state === "01";
     },
     isSendStatus() {
-      return this.contract.status === "02";
+      return (
+        this.contract.state === "02" &&
+        (this.isChiefAdmin || this.isMiddleAdmin)
+      );
     },
     isApplyStatus() {
-      return this.contract.status === "04";
+      return this.contract.state === "04";
     },
     isReSendStatus() {
-      return this.contract.status === "03";
+      return this.contract.state === "03";
     }
   },
   methods: {
-    close() {
+    close(refresh) {
       this.contract = {
-        idx: 0,
+        idx: "-1",
         company_nm: "",
         company_addr: "",
         company_addr_detail: "",
         company_tel: "",
         company_ceo: "",
         insert_date: "",
-        files: [],
+        files: {},
+        menuFiles: [],
+        buisnessFiles: [],
+        contractFiles: [],
         state: "",
         state_nm: "",
         contract_user_id: "",
         contract_user_nm: "",
-        reject_msg: ""
+        reject_msg: "",
+        file_del_list: []
       };
 
-      this.$emit("close");
+      this.$emit("close", refresh);
     },
-    save() {
-      Swal.fire({
-        title: `중간저장 완료`,
-        text: "중간저장이 완료되었습니다.",
-        confirmButtonClass: "md-button md-success",
-        type: "success"
-      }).then(() => {
-        this.close();
-      });
+    async save(state) {
+      const ct = this.contract;
+
+      const body = {
+        company_nm: ct.company_nm,
+        company_addr: ct.company_addr,
+        company_addr_detail: ct.company_addr_detail,
+        company_tel: ct.company_tel,
+        company_ceo: ct.company_ceo,
+        state: state,
+        login_id: this.userId,
+        login_level: this.userLevel
+      };
+
+
+      if (this.contract.idx !== "-1") {
+        body["idx"] = ct.idx;
+        body["file_del_list"] = ct.file_del_list;
+      }
+
+      const form_data = new FormData();
+
+      for (const key in body) {
+        form_data.append(key, body[key]);
+      }
+
+      if (ct.menuFiles !== []) {
+        for (const item of ct.menuFiles) {
+          form_data.append("menuFiles", item);
+        }
+      }
+
+      if (ct.buisnessFiles !== []) {
+        for (const item of ct.buisnessFiles) {
+          form_data.append("buisnessFiles", item);
+        }
+      }
+
+      if (ct.contractFiles !== []) {
+        for (const item of ct.contractFiles) {
+          form_data.append("contractFiles", item);
+        }
+      }
+
+      try {
+        await axiosInstance.post("/api/contract_action.php", form_data);
+
+        this.showAlert(
+          "success",
+          this.isSaveMode ? "저장 완료" : "수정 완료",
+          this.isSaveMode
+            ? "계약 정보가 저장되었습니다."
+            : "계약 정보가 수정되었습니다.",
+          this.close(true)
+        );
+      } catch (e) {
+        console.log(e);
+        this.showAlert(
+          "error",
+          "저장 실패",
+          "계약 정보 저장중 오류가 발생했습니다.",
+          () => {
+          }
+        );
+      }
     },
     send() {
       Swal.fire({
@@ -288,44 +432,25 @@ export default {
     },
     async onMenuFileChange(e) {
       let files = e.target.files || e.dataTransfer.files;
-
-      this.menu = files;
-
-      // TODO : S3 관련 로직 추가
-
-      // const multipartFile = new FormData();
-
-      // for (let i = 0; i < files.length; i++) {
-      //   multipartFile.append(`files`, files[i]);
-      // }
-      //
-      // for (const key of multipartFile.entries()) {
-      //   console.log(`${key}`);
-      // }
-      //
-      // const hi = await axiosInstance.post(
-      //   "/private/contract",
-      //   multipartFile,
-      //   {
-      //     headers: {
-      //       "Content-Type": "multipart/form-data"
-      //     }
-      //   }
-      // );
+      const filesArray = Array.from(files);
+      this.contract.menuFiles = [...this.contract.menuFiles, ...filesArray];
+      console.log(this.contract.menuFiles);
     },
     async onBusinessFileChange(e) {
       let files = e.target.files || e.dataTransfer.files;
-
-      this.business = files;
-
-      // TODO : S3 관련 로직 추가
+      const filesArray = Array.from(files);
+      this.contract.buisnessFiles = [
+        ...this.contract.buisnessFiles,
+        ...filesArray
+      ];
     },
     async onContractFileChange(e) {
       let files = e.target.files || e.dataTransfer.files;
-
-      this.contract = files;
-
-      // TODO : S3 관련 로직 추가
+      const filesArray = Array.from(files);
+      this.contract.contractFiles = [
+        ...this.contract.contractFiles,
+        ...filesArray
+      ];
     },
     async dis() {
       Swal.fire({
@@ -343,6 +468,18 @@ export default {
           this.$router.push({ path: "/list/contract" });
         });
       });
+    },
+    deleteCurrentFile(id, type) {
+      const file = this.contract[`${type}Files`];
+      this.contract[`${type}Files`] = file.filter(
+        x => x["lastModified"] !== id
+      );
+    },
+    deleteFile(idx, type) {
+      this.contract["files"][type] = this.contract["files"][type].filter(
+        x => x["idx"] !== idx
+      );
+      this.contract.file_del_list.push(idx);
     }
   }
 };
@@ -404,17 +541,18 @@ export default {
   margin-bottom: 10px;
 }
 
-.files{
+.files {
   text-align: left;
-  width:100%;
+  width: 100%;
   display: block;
-  font-size:0.8em;
+  font-size: 0.8em;
   line-height: 120%;
 }
+
 .files > i {
-  font-size: 0.9em!important;
+  font-size: 0.9em !important;
   cursor: pointer;
-  color: red!important;
+  color: red !important;
   font-weight: bold;
   line-height: 120%;
 }
