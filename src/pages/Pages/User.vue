@@ -17,7 +17,7 @@
               >
                 <label for="filter">권한</label>
                 <md-select
-                  v-model="userLevel"
+                  v-model="searchLevel"
                   :disabled="this.isMiddleAdmin"
                 >
                   <md-option v-for="(item, index) in business_cd" :key="index" :value="item['code_cd']">
@@ -130,7 +130,7 @@ export default {
   },
   computed: {
     hasSearchText() {
-      return this.text.length > 0 && this.searchLevel;
+      return this.text.length > 0 || this.searchLevel;
     }
   },
   data() {
@@ -143,10 +143,10 @@ export default {
       tableData: [],
       open: false,
       id: "-1",
-      userLevel: "",
+      searchLevel: "",
       text: "",
       search: {
-        searchLevel: "",
+        userLevel: "",
         text: "",
         isSearching: false
       },
@@ -202,8 +202,8 @@ export default {
         }
 
         if(this.search.isSearching) {
-          param["search_nm"] = this.search.text;
-          param["user_level"] = this.search.userLevel;
+          if(this.search.text) param["search_nm"] = this.search.text;
+          if(this.search.userLevel) param["user_level"] = this.search.userLevel;
         }
 
         const { data } = await axiosInstance.get("/api/sy_user.php", {
