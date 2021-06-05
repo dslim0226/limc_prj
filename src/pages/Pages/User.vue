@@ -30,13 +30,13 @@
                 style="padding-right:0;"
               >
                 <label>아이디 / 이름</label>
-                <md-input v-model="text" />
+                <md-input v-model="text" @keypress.enter="searchEnter"/>
                 <md-button
                   @click="searching"
-                  :disabled="!hasSearchText"
+                  :disabled="!hasSearchText && !search.isSearching"
                   class="md-icon-button"
                 >
-                  <md-icon>search</md-icon>
+                  <md-icon>{{ search.isSearching ? "clear" : "search" }}</md-icon>
                 </md-button>
               </md-field>
             </div>
@@ -79,6 +79,9 @@
                 </md-button>
               </md-table-cell>
             </md-table-row>
+            <div class="no-data" v-if="tableData.length < 1">
+              {{ search.isSearching ? "검색조건에 맞는 데이터가 없습니다." : "데이터가 없습니다." }}
+            </div>
           </md-table>
           <div class="paging">
             <pagination
@@ -95,6 +98,7 @@
   </div>
 </template>
 <script>
+import _ from "lodash";
 import Pagination from "@/components/Pagination";
 import UserFormModal from "@/pages/Modals/UserFormModal";
 import Spinner from "@/components/Spinner";
@@ -176,6 +180,7 @@ export default {
           this.tableData = data["data"]["rows"];
           this.paging.total = data["data"]["records"];
         } catch (e) {
+          console.log(e);
           this.showAlert("error", "접근 오류", "일시적 오류입니다.", () => { this.$router.push('/') });
         } finally {
           this.loading = false;
@@ -183,11 +188,20 @@ export default {
       }
     },
     searching() {
+      if(this.search.isSearching) {
+        this.searchLevel = "";
+        this.text = "";
+      }
+      this.search.isSearching = !this.search.isSearching;
       this.search.userLevel = this.searchLevel;
       this.search.text = this.text;
-      this.search.isSearching = true;
       this.paging.page = 1;
       this.loadData();
+    },
+    searchEnter() {
+      if(this.hasSearchText && !this.search.isSearching) {
+        this.searching();
+      }
     },
     async chgPage(item) {
       this.loading = true;
@@ -210,9 +224,14 @@ export default {
           params : param
         });
 
-        this.tableData = data["data"]["rows"];
+        if(_.isEmpty(data["data"]["rows"])) {
+          this.tableData = [];
+        } else {
+          this.tableData = data["data"]["rows"];
+        }
         this.paging.total = data["data"]["records"];
       } catch (e) {
+        console.log(e);
         this.showAlert("error", "접근 오류", "일시적 오류입니다.", () => { this.$router.push('/') });
       }
 
@@ -252,5 +271,13 @@ export default {
 }
 .md-table-head-container {
   text-align: center !important;
+}
+
+.no-data {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.9em;
+  padding: 3em 0.5em;
 }
 </style>
