@@ -29,7 +29,7 @@
 </template>
 <script>
 import { LoginCard } from "@/components";
-import axios from "axios";
+import { axiosInstance } from "@/axiosModule";
 import { mapActions } from "vuex";
 import AlertMixin from "@/mixin/AlertMixin";
 
@@ -40,7 +40,10 @@ export default {
   mixins: [AlertMixin],
   computed: {
     hasLoginData() {
-      return /^[A-Za-z0-9!~@#$%^&*()?+=\/]{4,}$/.test(this.loginId) && this.password.length > 3;
+      return (
+        /^[A-Za-z0-9!~@#$%^&*()?+=\/]{4,}$/.test(this.loginId) &&
+        this.password.length > 3
+      );
     }
   },
   data() {
@@ -50,19 +53,28 @@ export default {
     };
   },
   methods: {
-    methods: {
-      ...mapActions("login", ["login"])
-    },
+    ...mapActions("login", ["memberInfo"]),
     async loginBtn() {
-      try{
-        const {data} = await axios.post("http://192.168.35.102:8080/public/login", {
-          loginId: this.loginId,
-          password: this.password
+      try {
+        const { data } = await axiosInstance.get("/api/login.php", {
+          params: {
+            user_id: this.loginId,
+            user_pw: this.password
+          }
         });
 
-        this.login.then(() => { this.$router.push("/"); });
+        if (data.result === "200") {
+          this.memberInfo(data["data"]).then(() => {
+            this.$router.push("/");
+          });
+        }
       } catch (e) {
-        this.showAlert("error", "로그인 실패", "아이디 및 비밀번호가 올바르지 않습니다.",()=>{})
+        this.showAlert(
+          "error",
+          "로그인 실패",
+          "아이디 및 비밀번호가 올바르지 않습니다.",
+          () => {}
+        );
       }
     }
   }

@@ -17,7 +17,7 @@
               >
                 <label for="filter">권한</label>
                 <md-select
-                  v-model="search.memberRole"
+                  v-model="search.userLevel"
                   :disabled="this.isMiddleAdmin"
                 >
                   <md-option :value="userRole.MIDDLE_ADMIN" v-if="isChiefAdmin"
@@ -97,10 +97,10 @@
 <script>
 import Pagination from "@/components/Pagination";
 import UserFormModal from "@/pages/Modals/UserFormModal";
-import axios from "axios";
 import Spinner from "@/components/Spinner";
 import AuthorityMixin from "@/mixin/AuthorityMixin";
 import AlertMixin from "@/mixin/AlertMixin";
+import { axiosInstance } from "@/axiosModule";
 
 export default {
   components: { Spinner, UserFormModal, Pagination },
@@ -109,16 +109,16 @@ export default {
     if(this.isGeneralUser) {
       this.showAlert("error", "접근 오류", "일반회원은 접근할 수 없습니다.", () => { this.$router.push('/') });
     }
-    if (this.isMiddleAdmin) this.search.memberRole = this.userRole.GENERAL_USER;
+    if (this.isMiddleAdmin) this.search.userLevel = this.userRole.GENERAL_USER;
     this.loading = true;
     try {
       // TODO : 페이징 추가
-      const { data } = await axios.get(
-        "http://my-json-server.typicode.com/dslim0226/test-json/user"
+      const { data } = await axiosInstance.get(
+        "https://my-json-server.typicode.com/dslim0226/test-json/user"
       );
       this.tableData = data;
     } catch (e) {
-      console.log(e);
+      this.showAlert("error", "접근 오류", "일시적 오류입니다.", () => { this.$router.push('/') });
     }
 
     this.loading = false;
@@ -137,7 +137,7 @@ export default {
       open: false,
       id: -1,
       search: {
-        memberRole: "",
+        userLevel: "",
         text: ""
       },
       loading: false
@@ -157,7 +157,7 @@ export default {
     },
     async chgPage(item) {
       // this.loading = true;
-      // const { data } = await axios.get(url, params: {
+      // const { data } = await axiosInstance.get(url, params: {
       //  page: item
       // });
       //

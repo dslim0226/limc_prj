@@ -63,7 +63,7 @@
       <div class="md-layout" v-if="isChiefAdmin">
         <md-field>
           <label>권한</label>
-          <md-select v-model="user.memberRole" :disabled="!isSaveMode">
+          <md-select v-model="user.userLevel" :disabled="!isSaveMode">
             <md-option :value="userRole.MIDDLE_ADMIN">중간관리자</md-option>
             <md-option :value="userRole.GENERAL_USER">일반관리자</md-option>
           </md-select>
@@ -134,7 +134,7 @@
 <script>
 import * as userRole from "@/role";
 import Modal from "@/components/Modal";
-import axios from "axios";
+import { axiosInstance } from "@/axiosModule";
 import Spinner from "@/components/Spinner";
 import AuthorityMixin from "@/mixin/AuthorityMixin";
 import AlertMixin from "@/mixin/AlertMixin";
@@ -142,8 +142,8 @@ import AlertMixin from "@/mixin/AlertMixin";
 export default {
   async created() {
     // 일반관리자 생성 시 중간관리자 목록 리스트
-    // const { data } = await axios.get("/private/user/authorities");
-    // this.parentAdminList = data.map(x => `${x.name}(${x.loginId})`);
+    const { data } = await axiosInstance.get("/private/user/authorities");
+    this.parentAdminList = data.map(x => `${x.name}(${x.loginId})`);
   },
   components: { Spinner, Modal },
   mixins: [AuthorityMixin, AlertMixin],
@@ -165,7 +165,7 @@ export default {
       );
     },
     checkMiddleAdminInForm() {
-      return this.user.memberRole === userRole.GENERAL_USER;
+      return this.user.userLevel === userRole.GENERAL_USER;
     },
     isIdCheck() {
       return this.idCheck || !/^[!A-Za-z0-9]{4,}$/.test(this.user.loginId);
@@ -188,7 +188,7 @@ export default {
       let check = true;
       if (this.isChiefAdmin) {
         check =
-          this.memberRole.length > 0 &&
+          this.userLevel.length > 0 &&
           (this.checkMiddleAdminInForm
             ? true
             : this.parentAdminList.length > 0);
@@ -203,8 +203,8 @@ export default {
       if (id > -1) {
         this.loading = true;
 
-        const { data } = await axios.get(
-          `http://my-json-server.typicode.com/dslim0226/test-json/user/${id}`
+        const { data } = await axiosInstance.get(
+          `https://my-json-server.typicode.com/dslim0226/test-json/user/${id}`
         );
 
         this.user = { ...this.user, ...data };
@@ -230,7 +230,7 @@ export default {
       name: "",
       password: "",
       password2: "",
-      memberRole: "",
+      userLevel: "",
       tel: "",
       parentAdmin: "",
       createDate: ""
@@ -245,7 +245,7 @@ export default {
       this.$emit("close");
     },
     async check() {
-      // const { data } = await axios.get("http://192.168.35.102:8080/private/User/check", {
+      // const { data } = await axiosInstance.get("/private/User/check", {
       //   params: {
       //     loginId: this.user.loginId
       //   }
@@ -261,7 +261,7 @@ export default {
     },
     async updateUser() {
       try {
-        // const { data } = await axios.put("/private/User", {
+        // const { data } = await axiosInstance.put("/private/User", {
         //   userId: this.user.userId,
         //   name: this.user.name,
         //   tel: this.user.tel
@@ -277,7 +277,7 @@ export default {
         loginId: this.user.loginId,
         password: this.user.password,
         userNm: this.user.name,
-        userRole: this.user.memberRole,
+        userRole: this.user.userLevel,
         userTelNum: this.user.tel.replace(/[^0-9]/gi, "")
       };
 
@@ -296,7 +296,7 @@ export default {
       }
 
       try{
-        await axios.post("http://192.168.35.102:8080/private/User", body);
+        await axiosInstance.post("/private/User", body);
         this.showAlert("success", "생성 완료", "회원 정보가 생성되었습니다.", this.close)
       } catch(e) {
         this.showAlert("error", "생성 실패", "회원 정보 생성 중 오류가 발생했습니다.",()=>{})

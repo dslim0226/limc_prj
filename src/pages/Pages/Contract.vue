@@ -108,7 +108,7 @@
 <script>
 import Pagination from "@/components/Pagination";
 import ContractFormModal from "@/pages/Modals/ContractFormModal";
-import axios from "axios";
+import { axiosInstance } from "@/axiosModule";
 import Spinner from "@/components/Spinner";
 
 export default {
@@ -116,8 +116,8 @@ export default {
   async created() {
     this.loading = true;
     try {
-      const { data } = await axios.get(
-        "http://my-json-server.typicode.com/dslim0226/test-json/contract"
+      const { data } = await axiosInstance.get(
+        "https://my-json-server.typicode.com/dslim0226/test-json/contract"
       );
       this.tableData = data;
     } catch (e) {
@@ -139,7 +139,7 @@ export default {
       total: 88,
       tableData: [],
       search: {
-        memberRole: "",
+        userLevel: "",
         text: ""
       },
       open: false,
@@ -161,14 +161,14 @@ export default {
     async searching() {
       console.log("Not Yet");
       // this.loading = true;
-      // const { data } = await axios.get(url);
+      // const { data } = await axiosInstance.get(url);
       //
       // this.tableData = data;
       // this.loading = false;
     },
     async chgPage(item) {
       // this.loading = true;
-      // const { data } = await axios.get(url, params: {
+      // const { data } = await axiosInstance.get(url, params: {
       //  page: item
       // });
       //

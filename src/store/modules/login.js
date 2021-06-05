@@ -1,9 +1,7 @@
 const getDefaultState = () => {
   return {
-    accessToken: "d",
-    refreshToken: "d",
-    memberId: "d",
-    memberRole: "CHIEF_ADMIN"
+    userId: "",
+    userLevel: ""
   };
 };
 
@@ -11,17 +9,15 @@ const getDefaultState = () => {
 const state = getDefaultState();
 
 const getters = {
-  accessToken: state => state.accessToken,
-  refreshToken: state => state.refreshToken,
-  memberId: state => state.memberId,
-  memberRole: state => state.memberRole,
+  userId: state => state.userId,
+  userLevel: state => state.userLevel,
   isLogin: state =>
-    state.accessToken !== "" && state.memberId !== "" && state.memberRole !== ""
+    state.userId !== "" && state.userLevel !== ""
 };
 
 const actions = {
-  async login({ commit }, { accessToken, refreshToken, memberId, memberRole }) {
-    commit("login", { accessToken, refreshToken, memberId, memberRole });
+  async memberInfo({ commit }, { user_id, user_level }) {
+    commit("login", { userId: user_id, userLevel: user_level });
   },
   async initData({ commit }) {
     commit("initData");
@@ -30,17 +26,13 @@ const actions = {
 
 // mutations
 const mutations = {
-  login(state, { accessToken, refreshToken, memberId, memberRole }) {
-    state.accessToken = accessToken;
-    state.refreshToken = refreshToken;
-    state.memberId = memberId;
-    state.memberRole = memberRole;
+  login(state, { userId, userLevel }) {
+    state.userId = userId;
+    state.userLevel = userLevel;
   },
   initData(state) {
-    state.accessToken = "";
-    state.refreshToken = "";
-    state.memberId = "";
-    state.memberRole = "";
+    state.userId = "";
+    state.userLevel = "";
   }
 };
 

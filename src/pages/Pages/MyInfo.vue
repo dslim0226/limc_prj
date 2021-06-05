@@ -67,8 +67,7 @@
   </div>
 </template>
 <script>
-import Swal from "sweetalert2";
-import axios from "axios";
+import { axiosInstance } from "@/axiosModule";
 import Spinner from "@/components/Spinner";
 import AlertMixin from "@/mixin/AlertMixin";
 
@@ -99,8 +98,8 @@ export default {
     this.loading = true;
 
     try {
-      const { data } = await axios.get(
-        "http://my-json-server.typicode.com/dslim0226/test-json/user/1"
+      const { data } = await axiosInstance.get(
+        "https://my-json-server.typicode.com/dslim0226/test-json/user/1"
       );
       this.user = { ...this.user, ...data };
       this.backup.name = data.name;
@@ -122,7 +121,7 @@ export default {
       name: "",
       password: "",
       password2: "",
-      memberRole: "",
+      userLevel: "",
       tel: "",
       parentAdmin: "",
       createDate: ""
@@ -146,7 +145,7 @@ export default {
       }
 
       try {
-        // const { data } = await axios.put("/private/User", body);
+        // const { data } = await axiosInstance.put("/private/User", body);
 
         this.showAlert(
           "success",

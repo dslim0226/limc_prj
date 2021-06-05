@@ -143,7 +143,7 @@
 
 <script>
 import Swal from "sweetalert2";
-import axios from "axios";
+import { axiosInstance } from "@/axiosModule";
 import Modal from "@/components/Modal";
 import Spinner from "@/components/Spinner";
 
@@ -162,8 +162,8 @@ export default {
       if (id > -1) {
         this.loading = true;
 
-        const { data } = await axios.get(
-          `http://my-json-server.typicode.com/dslim0226/test-json/contract/${id}`
+        const { data } = await axiosInstance.get(
+          `https://my-json-server.typicode.com/dslim0226/test-json/contract/${id}`
         );
 
         this.contract = { ...this.contract, ...data };
@@ -281,8 +281,8 @@ export default {
       //   console.log(`${key}`);
       // }
       //
-      // const hi = await axios.post(
-      //   "http://192.168.35.185:8080/private/contract",
+      // const hi = await axiosInstance.post(
+      //   "/private/contract",
       //   multipartFile,
       //   {
       //     headers: {
