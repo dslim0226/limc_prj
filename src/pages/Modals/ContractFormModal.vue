@@ -98,7 +98,7 @@
           {{ item["name"] }}
           <md-button
             v-if="!(diffId || isApplyStatus)"
-            @click="deleteCurrentFile(item['lastModified'], 'menu')"
+            @click="deleteCurrentFile(item['id'], 'menu')"
             class="md-icon-button clearBtn"
           >
             <md-icon>clear</md-icon>
@@ -149,7 +149,7 @@
           {{ item["name"] }}
           <md-button
             v-if="!(diffId || isApplyStatus)"
-            @click="deleteCurrentFile(item['lastModified'], 'buisness')"
+            @click="deleteCurrentFile(item['id'], 'buisness')"
             class="md-icon-button clearBtn"
           >
             <md-icon>clear</md-icon>
@@ -206,7 +206,7 @@
           {{ item["name"] }}
           <md-button
             v-if="!(diffId || isApplyStatus)"
-            @click="deleteCurrentFile(item['lastModified'], 'contract')"
+            @click="deleteCurrentFile(item['id'], 'contract')"
             class="md-icon-button clearBtn"
           >
             <md-icon>clear</md-icon>
@@ -253,7 +253,6 @@
         <div
           v-if="
             (isSaveStatus || isSaveMode) &&
-              (this.isGeneralUser || this.isMiddleAdmin) &&
               (!diffId || isSaveMode)
           "
         >
@@ -348,6 +347,7 @@ export default {
       reject_msg: "",
       file_del_list: []
     },
+    picIdx: 0,
     loading: false
   }),
   computed: {
@@ -423,6 +423,7 @@ export default {
         reject_msg: "",
         file_del_list: []
       };
+      this.picIdx = 0;
 
       this.$emit("close", refresh);
     },
@@ -513,14 +514,21 @@ export default {
       this.contract.company_addr = `(${zip}) ${addr}`;
     },
     async onMenuFileChange(e) {
+      console.log(e);
       let files = e.target.files || e.dataTransfer.files;
       const filesArray = Array.from(files);
+      for(const item of filesArray) {
+        item["id"] = this.picIdx++;
+      }
       this.contract.menuFiles = [...this.contract.menuFiles, ...filesArray];
-      console.log(this.contract.menuFiles);
+      e.target.value = '';
     },
     async onBusinessFileChange(e) {
       let files = e.target.files || e.dataTransfer.files;
       const filesArray = Array.from(files);
+      for(const item of filesArray) {
+        item["id"] = this.picIdx++;
+      }
       this.contract.buisnessFiles = [
         ...this.contract.buisnessFiles,
         ...filesArray
@@ -529,6 +537,9 @@ export default {
     async onContractFileChange(e) {
       let files = e.target.files || e.dataTransfer.files;
       const filesArray = Array.from(files);
+      for(const item of filesArray) {
+        item["id"] = this.picIdx++;
+      }
       this.contract.contractFiles = [
         ...this.contract.contractFiles,
         ...filesArray
@@ -605,10 +616,10 @@ export default {
       });
     },
     deleteCurrentFile(id, type) {
-      const file = this.contract[`${type}Files`];
-      this.contract[`${type}Files`] = file.filter(
-        x => x["lastModified"] !== id
+      this.contract[`${type}Files`] = this.contract[`${type}Files`].filter(
+        x => x.id !== id
       );
+      console.log(this.contract[`${type}Files`]);
     },
     deleteFile(idx, type) {
       this.contract["files"][type] = this.contract["files"][type].filter(
