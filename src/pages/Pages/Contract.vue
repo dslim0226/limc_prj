@@ -38,7 +38,7 @@
               </md-field>
             </div>
             <md-button
-              class="md-dense md-layout-item md-xsmall-size-100 md-size-10"
+              class="md-dense md-layout-item md-xsmall-size-100 md-size-10 excelDownload"
               @click="excelDownload"
             >엑셀다운로드</md-button
             >
@@ -68,9 +68,6 @@
             <md-table-row slot="md-table-row" slot-scope="{ item }">
               <md-table-cell md-label="상호명">{{
                 item["company_nm"]
-              }}</md-table-cell>
-              <md-table-cell md-label="주소">{{
-                `${item["company_addr"]} ${item["company_addr_detail"]}`
               }}</md-table-cell>
               <md-table-cell md-label="연락처">{{
                 item["company_tel"]
@@ -261,5 +258,10 @@ export default {
 
 .table-top .table-top-left {
   margin-right: 0;
+}
+@media screen and (max-width: 992px) {
+  .table-top {
+    display: block;
+  }
 }
 </style>

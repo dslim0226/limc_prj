@@ -110,7 +110,13 @@
           v-for="(item, index) in contract.files.menu"
           :key="index"
         >
-          <a :href="`http://kokimin7805.cafe24.com/upload/menu/${item['file_temp_name']}`" target="_blank" >{{ item["file_name"] }}</a>
+          <a
+            :href="
+              `http://kokimin7805.cafe24.com/upload/menu/${item['file_temp_name']}`
+            "
+            target="_blank"
+            >{{ item["file_name"] }}</a
+          >
           <md-button
             v-if="!(diffId || isApplyStatus || isSendStatus)"
             @click="deleteFile(item['idx'], 'menu')"
@@ -223,7 +229,7 @@
               `http://kokimin7805.cafe24.com/upload/contract/${item['file_temp_name']}`
             "
             target="_blank"
-          >{{ item["file_name"] }}</a
+            >{{ item["file_name"] }}</a
           >
           <md-button
             v-if="!(diffId || isApplyStatus || isSendStatus)"
@@ -241,6 +247,15 @@
           <md-textarea :disabled="true" v-model="contract.reject_msg" />
         </md-field>
       </div>
+
+      <div class="md-layout mobile-button" v-if="showDeleteBtn">
+        <md-button
+          @click="deleteContract"
+          class="md-danger md-dense mobile-button"
+        >
+          삭제
+        </md-button>
+      </div>
     </template>
 
     <template slot="footer">
@@ -249,17 +264,16 @@
           <md-button @click="close(false)" class="md-default md-dense">
             닫기
           </md-button>
-        </div>
-        <div
-          v-if="
-            (isSaveStatus || isSaveMode) &&
-              (!diffId || isSaveMode)
-          "
-        >
           <md-button
-            @click="save('01')"
-            class="md-primary md-dense"
+            v-if="showDeleteBtn"
+            @click="deleteContract"
+            class="md-danger md-dense pc-button"
           >
+            삭제
+          </md-button>
+        </div>
+        <div v-if="(isSaveStatus || isSaveMode) && (!diffId || isSaveMode)">
+          <md-button @click="save('01')" class="md-primary md-dense">
             중간저장
           </md-button>
           <md-button
@@ -354,17 +368,32 @@ export default {
     diffId() {
       return this.contract.contract_user_id !== this.userId && !this.isSaveMode;
     },
+    showDeleteBtn() {
+      return (
+        ((!this.isSaveStatus && this.isChiefAdmin) ||
+          (!this.diffId && this.isSaveStatus)) &&
+        !this.isSaveMode
+      );
+    },
     hasMenuFiles() {
-      return this.contract.menuFiles.length > 0 ||
-        (this.contract.files.menu && this.contract.files.menu.length > 0);
+      return (
+        this.contract.menuFiles.length > 0 ||
+        (this.contract.files.menu && this.contract.files.menu.length > 0)
+      );
     },
     hasBusinessFiles() {
-      return this.contract.buisnessFiles.length > 0 ||
-        (this.contract.files.buisness && this.contract.files.buisness.length > 0);
+      return (
+        this.contract.buisnessFiles.length > 0 ||
+        (this.contract.files.buisness &&
+          this.contract.files.buisness.length > 0)
+      );
     },
     hasContractFiles() {
-      return this.contract.contractFiles.length > 0 ||
-        (this.contract.files.contract && this.contract.files.contract.length > 0);
+      return (
+        this.contract.contractFiles.length > 0 ||
+        (this.contract.files.contract &&
+          this.contract.files.contract.length > 0)
+      );
     },
     canSend() {
       return !(
@@ -517,16 +546,16 @@ export default {
       console.log(e);
       let files = e.target.files || e.dataTransfer.files;
       const filesArray = Array.from(files);
-      for(const item of filesArray) {
+      for (const item of filesArray) {
         item["id"] = this.picIdx++;
       }
       this.contract.menuFiles = [...this.contract.menuFiles, ...filesArray];
-      e.target.value = '';
+      e.target.value = "";
     },
     async onBusinessFileChange(e) {
       let files = e.target.files || e.dataTransfer.files;
       const filesArray = Array.from(files);
-      for(const item of filesArray) {
+      for (const item of filesArray) {
         item["id"] = this.picIdx++;
       }
       this.contract.buisnessFiles = [
@@ -537,7 +566,7 @@ export default {
     async onContractFileChange(e) {
       let files = e.target.files || e.dataTransfer.files;
       const filesArray = Array.from(files);
-      for(const item of filesArray) {
+      for (const item of filesArray) {
         item["id"] = this.picIdx++;
       }
       this.contract.contractFiles = [
@@ -626,6 +655,39 @@ export default {
         x => x["idx"] !== idx
       );
       this.contract.file_del_list.push(idx);
+    },
+    deleteContract() {
+      Swal.fire({
+        title: "해당 계약건을 삭제하시겠습니까?",
+        showCancelButton: true,
+        confirmButtonText: `확인`,
+        cancelButtonText: `취소`
+      }).then(async ({ value }) => {
+        if (value) {
+          try {
+            //http://kokimin7805.cafe24.com/api/contract_del.php?idx=21&login_id=kokimin
+            await axiosInstance.get("/api/contract_del.php", {
+              params: {
+                idx: this.contract.idx
+              }
+            });
+
+            this.showAlert(
+              "success",
+              "삭제 완료",
+              "해당 계약건이 삭제되었습니다!",
+              this.close(true)
+            );
+          } catch (e) {
+            this.showAlert(
+              "error",
+              "삭제 실패",
+              "해당 계약건 삭제중 오류가 발생했습니다.",
+              () => {}
+            );
+          }
+        }
+      });
     }
   }
 };
@@ -709,5 +771,23 @@ export default {
   max-width: 20px;
   width: 20px;
   margin-left: 3px;
+}
+.pc-button {
+  display: initial;
+}
+.mobile-button {
+  display: none;
+}
+@media screen and (max-width: 992px) {
+  .md-card-actions.md-alignment-space-between {
+    justify-content: center;
+  }
+  .pc-button {
+    display: none;
+  }
+  .mobile-button {
+    width: 100%;
+    display: initial;
+  }
 }
 </style>
