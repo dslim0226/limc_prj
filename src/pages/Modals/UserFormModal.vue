@@ -148,9 +148,6 @@ export default {
     if (this.isMiddleAdmin) {
       this.user.user_level = this.userRole.GENERAL_USER;
     }
-    // 일반관리자 생성 시 중간관리자 목록 리스트
-    const { data } = await axiosInstance.get("/api/parent_user.php");
-    this.parentAdminList = data["data"]["rows"];
   },
   components: { Spinner, Modal },
   mixins: [AuthorityMixin, AlertMixin],
@@ -241,6 +238,12 @@ export default {
     },
     "user.user_id": function() {
       this.idCheck = false;
+    },
+    open: async function(open) {
+      if(open) {
+        const { data } = await axiosInstance.get("/api/parent_user.php");
+        this.parentAdminList = data["data"]["rows"];
+      }
     }
   },
   data: () => ({
@@ -472,6 +475,9 @@ export default {
 
 .md-button-mobile {
   display: none;
+}
+.md-layout {
+  margin-bottom:1em;
 }
 
 @media screen and (max-width: 992px) {

@@ -44,7 +44,7 @@ export default {
   mixins: [AlertMixin],
   created() {
     if (this.isLogin) {
-      this.$router.push("/");
+      this.$router.push("/").catch(() => {});
     }
   },
   computed: {
@@ -76,7 +76,7 @@ export default {
 
         if (data.result === "200") {
           this.memberInfo(data["data"]).then(() => {
-            this.$router.push("/");
+            this.$router.push("/").catch(() => {});
           });
         }
       } catch (e) {

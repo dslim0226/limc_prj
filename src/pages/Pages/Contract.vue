@@ -9,7 +9,7 @@
           <h4 class="title">검색</h4>
         </md-card-header>
 
-        <md-card-content>
+        <md-card-content md-alignment="space-between">
           <div class="table-top">
             <div class="md-layout-item md-layout table-top-left">
               <md-field
@@ -37,6 +37,10 @@
                 </md-button>
               </md-field>
             </div>
+            <md-button
+              class="md-dense md-layout-item md-xsmall-size-100 md-size-10"
+            >엑셀다운로드</md-button
+            >
           </div>
         </md-card-content>
       </md-card>
@@ -246,6 +250,7 @@ export default {
 
 .table-top {
   display: flex;
+  align-items: center;
 }
 
 .table-top .table-top-left {
