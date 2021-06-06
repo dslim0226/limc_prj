@@ -39,6 +39,7 @@
             </div>
             <md-button
               class="md-dense md-layout-item md-xsmall-size-100 md-size-10"
+              @click="excelDownload"
             >엑셀다운로드</md-button
             >
           </div>
@@ -233,6 +234,11 @@ export default {
       } finally {
         this.loading = false;
       }
+    },
+    async excelDownload() {
+      window.open(
+        `http://kokimin7805.cafe24.com/api/contract_excel.php?state=${this.state}&search_nm=${this.text}&login_id=${this.userId}&login_level=${this.userLevel}`
+      );
     }
   }
 };
