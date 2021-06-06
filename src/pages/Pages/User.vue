@@ -14,6 +14,7 @@
             <div class="md-layout-item md-layout table-top-left">
               <md-field
                 class="md-layout-item md-xsmall-size-100 md-size-20 mr-5"
+                v-if="!isMiddleAdmin"
               >
                 <label for="filter">권한</label>
                 <md-select v-model="searchLevel" :disabled="this.isMiddleAdmin">
