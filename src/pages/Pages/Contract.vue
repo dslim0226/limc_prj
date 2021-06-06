@@ -17,6 +17,9 @@
               >
                 <label for="filter">상태</label>
                 <md-select v-model="state">
+                  <md-option value="">
+                    전체
+                  </md-option>
                   <md-option
                     v-for="(item, index) in business_cd"
                     :key="index"
@@ -28,13 +31,9 @@
               </md-field>
               <md-field class="md-layout-item md-xsmall-size-100 md-size-25">
                 <label>상호명</label>
-                <md-input v-model="text" />
-                <md-button
-                  :disabled="!hasSearchText"
-                  @click="searching"
-                  class="md-icon-button"
-                >
-                  <md-icon>{{ search.isSearching ? "clear" : "search" }}</md-icon>
+                <md-input v-model="text" @keypress.enter="searching" />
+                <md-button @click="searching" class="md-icon-button">
+                  <md-icon>search</md-icon>
                 </md-button>
               </md-field>
             </div>
@@ -94,7 +93,7 @@
               }}</md-table-cell>
               <md-table-cell md-label="비고" style="">
                 <md-button
-                  class="md-info md-icon-button"
+                  class="md-primary md-icon-button"
                   @click.native="openModal(item['idx'])"
                 >
                   <md-icon>edit</md-icon>
@@ -149,11 +148,6 @@ export default {
     await this.loadData();
     this.loading = false;
   },
-  computed: {
-    hasSearchText() {
-      return this.text.length > 0 || this.state;
-    }
-  },
   data() {
     return {
       id: "-1",
@@ -189,11 +183,7 @@ export default {
       }
     },
     async searching() {
-      if (this.search.isSearching) {
-        this.state = "";
-        this.text = "";
-      }
-      this.search.isSearching = !this.search.isSearching;
+      this.search.isSearching = this.searchLevel || this.text;
       this.search.state = this.state;
       this.search.text = this.text;
       this.paging.page = 1;

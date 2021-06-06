@@ -89,6 +89,7 @@
             />
           </md-button>
         </md-field>
+        <!-- 현재 업로드전 파일 -->
         <div
           class="files"
           v-for="(item, index) in contract.menuFiles"
@@ -98,21 +99,22 @@
           <md-button
             v-if="!(diffId || isApplyStatus)"
             @click="deleteCurrentFile(item['lastModified'], 'menu')"
-            class="md-icon-button"
+            class="md-icon-button clearBtn"
           >
             <md-icon>clear</md-icon>
           </md-button>
         </div>
+        <!-- 업로드가 되어있는 파일 -->
         <div
           class="files"
           v-for="(item, index) in contract.files.menu"
           :key="index"
         >
-          {{ item["file_name"] }}
+          <a :href="`http://kokimin7805.cafe24.com/upload/menu/${item['file_temp_name']}`" target="_blank" >{{ item["file_name"] }}</a>
           <md-button
             v-if="!(diffId || isApplyStatus)"
             @click="deleteFile(item['idx'], 'menu')"
-            class="md-icon-button"
+            class="md-icon-button clearBtn"
           >
             <md-icon>clear</md-icon>
           </md-button>
@@ -138,6 +140,7 @@
             />
           </md-button>
         </md-field>
+        <!-- 현재 업로드전 파일 -->
         <div
           class="files"
           v-for="(item, index) in contract.buisnessFiles"
@@ -146,22 +149,29 @@
           {{ item["name"] }}
           <md-button
             v-if="!(diffId || isApplyStatus)"
-            @click="deleteCurrentFile(item['lastModified'], 'buiness')"
-            class="md-icon-button"
+            @click="deleteCurrentFile(item['lastModified'], 'buisness')"
+            class="md-icon-button clearBtn"
           >
             <md-icon>clear</md-icon>
           </md-button>
         </div>
+        <!-- 업로드가 되어있는 파일 -->
         <div
           class="files"
           v-for="(item, index) in contract.files.buisness"
           :key="index"
         >
-          {{ item["file_name"] }}
+          <a
+            :href="
+              `http://kokimin7805.cafe24.com/upload/buisness/${item['file_temp_name']}`
+            "
+            target="_blank"
+            >{{ item["file_name"] }}</a
+          >
           <md-button
             v-if="!(diffId || isApplyStatus)"
             @click="deleteFile(item['idx'], 'buisness')"
-            class="md-icon-button"
+            class="md-icon-button clearBtn"
           >
             <md-icon>clear</md-icon>
           </md-button>
@@ -187,6 +197,7 @@
             />
           </md-button>
         </md-field>
+        <!-- 현재 업로드전 파일 -->
         <div
           class="files"
           v-for="(item, index) in contract.contractFiles"
@@ -196,21 +207,28 @@
           <md-button
             v-if="!(diffId || isApplyStatus)"
             @click="deleteCurrentFile(item['lastModified'], 'contract')"
-            class="md-icon-button"
+            class="md-icon-button clearBtn"
           >
             <md-icon>clear</md-icon>
           </md-button>
         </div>
+        <!-- 업로드가 되어있는 파일 -->
         <div
           class="files"
           v-for="(item, index) in contract.files.contract"
           :key="index"
         >
-          {{ item["file_name"] }}
+          <a
+            :href="
+              `http://kokimin7805.cafe24.com/upload/contract/${item['file_temp_name']}`
+            "
+            target="_blank"
+          >{{ item["file_name"] }}</a
+          >
           <md-button
             v-if="!(diffId || isApplyStatus)"
             @click="deleteFile(item['idx'], 'contract')"
-            class="md-icon-button"
+            class="md-icon-button clearBtn"
           >
             <md-icon>clear</md-icon>
           </md-button>
@@ -236,13 +254,20 @@
           v-if="
             (isSaveStatus || isSaveMode) &&
               (this.isGeneralUser || this.isMiddleAdmin) &&
-              !diffId
+              (!diffId || isSaveMode)
           "
         >
-          <md-button @click="save('01')" class="md-info md-dense">
+          <md-button
+            @click="save('01')"
+            class="md-primary md-dense"
+          >
             중간저장
           </md-button>
-          <md-button @click="save('02')" class="md-success md-dense">
+          <md-button
+            :disabled="canSend"
+            @click="save('02')"
+            class="md-success md-dense"
+          >
             신청
           </md-button>
         </div>
@@ -255,7 +280,11 @@
           </md-button>
         </div>
         <div v-else-if="isReSendStatus && !isChiefAdmin && !diffId">
-          <md-button class="md-success md-dense" @click="save('02')">
+          <md-button
+            :disabled="canSend"
+            class="md-success md-dense"
+            @click="save('02')"
+          >
             재요청
           </md-button>
         </div>
@@ -323,25 +352,54 @@ export default {
   }),
   computed: {
     diffId() {
-      return this.contract.contract_user_id !== this.userId;
+      return this.contract.contract_user_id !== this.userId && !this.isSaveMode;
     },
+    hasMenuFiles() {
+      return this.contract.menuFiles.length > 0 ||
+        (this.contract.files.menu && this.contract.files.menu.length > 0);
+    },
+    hasBusinessFiles() {
+      return this.contract.buisnessFiles.length > 0 ||
+        (this.contract.files.buisness && this.contract.files.buisness.length > 0);
+    },
+    hasContractFiles() {
+      return this.contract.contractFiles.length > 0 ||
+        (this.contract.files.contract && this.contract.files.contract.length > 0);
+    },
+    canSend() {
+      return !(
+        this.contract.company_nm &&
+        this.contract.company_addr &&
+        this.contract.company_addr_detail &&
+        this.contract.company_tel &&
+        this.contract.company_ceo &&
+        this.hasMenuFiles &&
+        this.hasBusinessFiles &&
+        this.hasContractFiles
+      );
+    },
+    // this.id 가 -1 이 아니면 생성이 아니라 수정임
     isSaveMode() {
       return this.id === "-1";
     },
+    // 중간저장이 된 상태
     isSaveStatus() {
       return this.contract.state === "01";
     },
+    // 신청이 된 상태
     isSendStatus() {
       return (
         this.contract.state === "02" &&
         (this.isChiefAdmin || this.isMiddleAdmin)
       );
     },
-    isApplyStatus() {
-      return this.contract.state === "04";
-    },
+    // 반려된 상태
     isReSendStatus() {
       return this.contract.state === "03";
+    },
+    // 승인된 상태
+    isApplyStatus() {
+      return this.contract.state === "04";
     }
   },
   methods: {
@@ -619,9 +677,10 @@ export default {
 }
 
 .files {
+  display: flex;
+  align-items: center;
   text-align: left;
   width: 100%;
-  display: block;
   font-size: 0.8em;
   line-height: 120%;
 }
@@ -632,5 +691,12 @@ export default {
   color: red !important;
   font-weight: bold;
   line-height: 120%;
+}
+
+.clearBtn {
+  min-width: 20px;
+  max-width: 20px;
+  width: 20px;
+  margin-left: 3px;
 }
 </style>

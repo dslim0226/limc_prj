@@ -34,7 +34,7 @@
 <script>
 import { LoginCard } from "@/components";
 import { axiosInstance } from "@/axiosModule";
-import { mapActions } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 import AlertMixin from "@/mixin/AlertMixin";
 
 export default {
@@ -42,7 +42,13 @@ export default {
     LoginCard
   },
   mixins: [AlertMixin],
+  created() {
+    if (this.isLogin) {
+      this.$router.push("/");
+    }
+  },
   computed: {
+    ...mapGetters("login", ["isLogin"]),
     hasLoginData() {
       return (
         /^[A-Za-z0-9!~@#$%^&*()?+=\/]{4,}$/.test(this.loginId) &&

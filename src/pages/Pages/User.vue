@@ -17,13 +17,15 @@
               >
                 <label for="filter">권한</label>
                 <md-select v-model="searchLevel" :disabled="this.isMiddleAdmin">
-                >
+                  <md-option value="">
+                    전체
+                  </md-option>
                   <md-option
                     v-for="(item, index) in business_cd"
                     :key="index"
                     :value="item['code_cd']"
                   >
-                    {{ item['code_nm'] }}
+                    {{ item["code_nm"] }}
                   </md-option>
                 </md-select>
               </md-field>
@@ -32,13 +34,12 @@
                 style="padding-right:0;"
               >
                 <label>아이디 / 이름</label>
-                <md-input v-model="text" @keypress.enter="searchEnter"/>
+                <md-input v-model="text" @keypress.enter="searching" />
                 <md-button
                   @click="searching"
-                  :disabled="!hasSearchText && !search.isSearching"
                   class="md-icon-button"
                 >
-                  <md-icon>{{ search.isSearching ? "clear" : "search" }}</md-icon>
+                  <md-icon>search</md-icon>
                 </md-button>
               </md-field>
             </div>
@@ -67,11 +68,21 @@
               <md-table-cell md-label="아이디">{{
                 item["user_id"]
               }}</md-table-cell>
-              <md-table-cell md-label="이름">{{ item["user_nm"] }}</md-table-cell>
-              <md-table-cell md-label="전화번호">{{ item["user_hp"] }}</md-table-cell>
-              <md-table-cell md-label="권한">{{ item["user_level_nm"] }}</md-table-cell>
-              <md-table-cell md-label="관리자">{{ item["parent_user_nm"] }}</md-table-cell>
-              <md-table-cell md-label="가입일">{{ item["insert_date"] }}</md-table-cell>
+              <md-table-cell md-label="이름">{{
+                item["user_nm"]
+              }}</md-table-cell>
+              <md-table-cell md-label="전화번호">{{
+                item["user_hp"]
+              }}</md-table-cell>
+              <md-table-cell md-label="권한">{{
+                item["user_level_nm"]
+              }}</md-table-cell>
+              <md-table-cell md-label="관리자">{{
+                item["parent_user_nm"]
+              }}</md-table-cell>
+              <md-table-cell md-label="가입일">{{
+                item["insert_date"]
+              }}</md-table-cell>
               <md-table-cell md-label="수정" style="">
                 <md-button
                   class="md-primary md-fab md-icon-button"
@@ -100,7 +111,12 @@
         </md-card-content>
       </md-card>
     </div>
-    <user-form-modal @close="close" :id="id" :open="open" :business_cd="business_cd" />
+    <user-form-modal
+      @close="close"
+      :id="id"
+      :open="open"
+      :business_cd="business_cd"
+    />
   </div>
 </template>
 <script>
@@ -118,8 +134,15 @@ export default {
 
   async created() {
     // 일반 유저 접근 금지
-    if(this.isGeneralUser) {
-      this.showAlert("error", "접근 오류", "일반회원은 접근할 수 없습니다.", () => { this.$router.push('/') });
+    if (this.isGeneralUser) {
+      this.showAlert(
+        "error",
+        "접근 오류",
+        "일반회원은 접근할 수 없습니다.",
+        () => {
+          this.$router.push("/");
+        }
+      );
     }
 
     // 검색 권한 공통코드 로드
@@ -137,11 +160,6 @@ export default {
     this.loading = true;
     await this.loadData();
     this.loading = false;
-  },
-  computed: {
-    hasSearchText() {
-      return this.text.length > 0 || this.searchLevel;
-    }
   },
   data() {
     return {
@@ -172,42 +190,35 @@ export default {
     async close(refresh) {
       this.open = false;
       this.id = "-1";
-      if(refresh) {
+      if (refresh) {
         this.loading = true;
         try {
           const param = {
             page: this.paging.page,
             limit: this.paging.limit
-          }
+          };
           const { data } = await axiosInstance.get("/api/sy_user.php", {
-            params : param
+            params: param
           });
 
           this.tableData = data["data"]["rows"];
           this.paging.total = data["data"]["records"];
         } catch (e) {
           console.log(e);
-          this.showAlert("error", "접근 오류", "일시적 오류입니다.", () => { this.$router.push('/') });
+          this.showAlert("error", "접근 오류", "일시적 오류입니다.", () => {
+            this.$router.push("/");
+          });
         } finally {
           this.loading = false;
         }
       }
     },
     async searching() {
-      if(this.search.isSearching) {
-        this.searchLevel = "";
-        this.text = "";
-      }
-      this.search.isSearching = !this.search.isSearching;
+      this.search.isSearching =  this.searchLevel || this.text;
       this.search.userLevel = this.searchLevel;
       this.search.text = this.text;
       this.paging.page = 1;
       await this.loadData();
-    },
-    searchEnter() {
-      if(this.hasSearchText && !this.search.isSearching) {
-        this.searching();
-      }
     },
     async chgPage(item) {
       this.loading = true;
@@ -219,18 +230,19 @@ export default {
         const param = {
           page: this.paging.page,
           limit: this.paging.limit
-        }
+        };
 
-        if(this.search.isSearching) {
-          if(this.search.text) param["search_nm"] = this.search.text;
-          if(this.search.userLevel) param["user_level"] = this.search.userLevel;
+        if (this.search.isSearching) {
+          if (this.search.text) param["search_nm"] = this.search.text;
+          if (this.search.userLevel)
+            param["user_level"] = this.search.userLevel;
         }
 
         const { data } = await axiosInstance.get("/api/sy_user.php", {
-          params : param
+          params: param
         });
 
-        if(_.isEmpty(data["data"]["rows"])) {
+        if (_.isEmpty(data["data"]["rows"])) {
           this.tableData = [];
         } else {
           this.tableData = data["data"]["rows"];
@@ -238,12 +250,13 @@ export default {
         this.paging.total = data["data"]["records"];
       } catch (e) {
         console.log(e);
-        this.showAlert("error", "접근 오류", "일시적 오류입니다.", () => { this.$router.push('/') });
+        this.showAlert("error", "접근 오류", "일시적 오류입니다.", () => {
+          this.$router.push("/");
+        });
       } finally {
         this.loading = false;
       }
-
-    },
+    }
   }
 };
 </script>

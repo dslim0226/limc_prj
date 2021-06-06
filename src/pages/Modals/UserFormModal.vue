@@ -17,7 +17,7 @@
             :disabled="!isSaveMode"
           />
           <span class="md-helper-text"
-          >영문 및 숫자를 포함한 4자리 이상 아이디를 적어주세요.</span
+            >영문 및 숫자를 포함한 4자리 이상 아이디를 적어주세요.</span
           >
           <md-button
             v-if="isSaveMode"
@@ -43,7 +43,7 @@
           <label>비밀번호</label>
           <md-input v-model="user.password" type="password"></md-input>
           <span class="md-helper-text"
-          >4자리 이상의 비밀번호를 적어주세요.</span
+            >4자리 이상의 비밀번호를 적어주세요.</span
           >
         </md-field>
       </div>
@@ -81,14 +81,13 @@
       <div class="md-layout" v-if="isChiefAdmin && checkMiddleAdminInForm">
         <md-field>
           <label>담당자</label>
-          <md-select v-model="user.parent_user" :disabled="!isSaveMode">
+          <md-select v-model="user.parent_user" :disabled="!isSaveMode && !isChiefAdmin">
             <md-option
               v-for="(item, index) in parentAdminList"
               :value="item.user_id"
               :key="index"
-            >{{ `${item.user_nm}(${item.user_id})` }}
-            </md-option
-            >
+              >{{ `${item.user_nm}(${item.user_id})` }}
+            </md-option>
           </md-select>
         </md-field>
       </div>
@@ -109,25 +108,25 @@
           </md-button>
         </div>
         <div>
-          <md-button
-            class="md-danger md-dense"
-            v-if="!isSaveMode && isChiefAdmin"
-            @click="deleteUser"
-          >삭제
-          </md-button>
+          <!--          <md-button-->
+          <!--            class="md-danger md-dense"-->
+          <!--            v-if="!isSaveMode && isChiefAdmin"-->
+          <!--            @click="deleteUser"-->
+          <!--          >삭제-->
+          <!--          </md-button>-->
           <md-button
             class="md-success md-dense"
             :disabled="!validateCreate"
             v-if="isSaveMode"
             @click="createUser"
-          >생성
+            >생성
           </md-button>
           <md-button
             class="md-success md-dense"
             :disabled="!isChangeData"
             v-else-if="!isSaveMode"
             @click="updateUser"
-          >수정
+            >수정
           </md-button>
         </div>
       </md-card-actions>
@@ -173,7 +172,8 @@ export default {
     isChangeData() {
       return (
         this.backup.user_nm !== this.user.user_nm ||
-        this.backup.user_hp !== this.user.user_hp
+        this.backup.user_hp !== this.user.user_hp ||
+        this.backup.parent_user !== this.user.parent_user
       );
     },
     checkMiddleAdminInForm() {
@@ -233,6 +233,7 @@ export default {
         this.user = { ...this.user, ...data["data"] };
         this.backup.user_nm = data["data"]["user_nm"];
         this.backup.user_hp = data["data"]["user_hp"];
+        this.backup.parent_user = data["data"]["parent_user"];
         this.loading = false;
       } else {
         this.init();
@@ -245,7 +246,8 @@ export default {
   data: () => ({
     backup: {
       user_nm: "",
-      user_hp: ""
+      user_hp: "",
+      parent_user: ""
     },
     user: {
       user_id: "",
@@ -307,8 +309,7 @@ export default {
           "error",
           "수정 실패",
           "회원 정보 수정 중 오류가 발생했습니다.",
-          () => {
-          }
+          () => {}
         );
       }
     },
@@ -352,46 +353,45 @@ export default {
           "error",
           "생성 실패",
           "회원 정보 생성 중 오류가 발생했습니다.",
-          () => {
-          }
+          () => {}
         );
       }
     },
-    async deleteUser() {
-      Swal.fire({
-        title: "해당 유저를 삭제하시겠습니까?",
-        showCancelButton: true,
-        confirmButtonText: `삭제`,
-        cancelButtonText: `취소`
-      }).then(async ({ value }) => {
-        if (value) {
-          try {
-            const body = {
-              mode: "DEL",
-              login_level: this.userLevel,
-              login_id: this.userId,
-              ...this.user
-            };
-            await axiosInstance.post("/api/sy_user_action.php", body);
-
-            this.showAlert(
-              "success",
-              "삭제 완료",
-              "회원 정보가 삭제되었습니다!",
-              this.close(true)
-            );
-          } catch (e) {
-            this.showAlert(
-              "error",
-              "삭제 실패",
-              "회원 정보 삭제 중 오류가 발생했습니다.",
-              () => {
-              }
-            );
-          }
-        }
-      });
-    },
+    // async deleteUser() {
+    //   Swal.fire({
+    //     title: "해당 유저를 삭제하시겠습니까?",
+    //     showCancelButton: true,
+    //     confirmButtonText: `삭제`,
+    //     cancelButtonText: `취소`
+    //   }).then(async ({ value }) => {
+    //     if (value) {
+    //       try {
+    //         const body = {
+    //           mode: "DEL",
+    //           login_level: this.userLevel,
+    //           login_id: this.userId,
+    //           ...this.user
+    //         };
+    //         await axiosInstance.post("/api/sy_user_action.php", body);
+    //
+    //         this.showAlert(
+    //           "success",
+    //           "삭제 완료",
+    //           "회원 정보가 삭제되었습니다!",
+    //           this.close(true)
+    //         );
+    //       } catch (e) {
+    //         this.showAlert(
+    //           "error",
+    //           "삭제 실패",
+    //           "회원 정보 삭제 중 오류가 발생했습니다.",
+    //           () => {
+    //           }
+    //         );
+    //       }
+    //     }
+    //   });
+    // },
     init() {
       this.user = {
         user_id: "",
