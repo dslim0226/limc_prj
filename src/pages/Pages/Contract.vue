@@ -188,7 +188,7 @@ export default {
       }
     },
     async searching() {
-      this.search.isSearching = this.searchLevel || this.text;
+      this.search.isSearching = this.state || this.text;
       this.search.state = this.state;
       this.search.text = this.text;
       this.paging.page = 1;

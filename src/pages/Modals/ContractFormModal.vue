@@ -12,7 +12,7 @@
         <md-field>
           <label>상호명</label>
           <md-input
-            :disabled="diffId"
+            :disabled="diffId || isSendStatus || isApplyStatus"
             v-model="contract.company_nm"
             type="text"
           />
@@ -29,7 +29,7 @@
             type="text"
           />
           <md-button
-            :disabled="diffId"
+            :disabled="diffId || isSendStatus || isApplyStatus"
             class="md-default md-dense"
             @click="kakaoMap"
           >
@@ -39,7 +39,7 @@
         <md-field>
           <label>상세주소 입력</label>
           <md-input
-            :disabled="diffId"
+            :disabled="diffId || isSendStatus || isApplyStatus"
             v-model="contract.company_addr_detail"
             type="text"
           />
@@ -51,7 +51,7 @@
         <md-field>
           <label>연락처</label>
           <md-input
-            :disabled="diffId"
+            :disabled="diffId || isSendStatus || isApplyStatus"
             v-model="contract.company_tel"
             type="text"
           />
@@ -62,7 +62,7 @@
         <md-field>
           <label>대표명</label>
           <md-input
-            :disabled="diffId"
+            :disabled="diffId || isSendStatus || isApplyStatus"
             v-model="contract.company_ceo"
             type="text"
           />
@@ -75,7 +75,7 @@
           <label>메뉴 사진</label>
           <md-input :disabled="true" />
           <md-button
-            :disabled="diffId"
+            :disabled="diffId || isSendStatus || isApplyStatus"
             class="md-default md-dense md-fileinput"
           >
             <template>찾아보기</template>
@@ -97,7 +97,7 @@
         >
           {{ item["name"] }}
           <md-button
-            v-if="!(diffId || isApplyStatus)"
+            v-if="!(diffId || isApplyStatus || isSendStatus)"
             @click="deleteCurrentFile(item['id'], 'menu')"
             class="md-icon-button clearBtn"
           >
@@ -112,7 +112,7 @@
         >
           <a :href="`http://kokimin7805.cafe24.com/upload/menu/${item['file_temp_name']}`" target="_blank" >{{ item["file_name"] }}</a>
           <md-button
-            v-if="!(diffId || isApplyStatus)"
+            v-if="!(diffId || isApplyStatus || isSendStatus)"
             @click="deleteFile(item['idx'], 'menu')"
             class="md-icon-button clearBtn"
           >
@@ -126,7 +126,7 @@
           <label>사업자등록증</label>
           <md-input :disabled="true" />
           <md-button
-            :disabled="diffId"
+            :disabled="diffId || isSendStatus || isApplyStatus"
             class="md-default md-dense md-fileinput"
           >
             <template>찾아보기</template>
@@ -148,7 +148,7 @@
         >
           {{ item["name"] }}
           <md-button
-            v-if="!(diffId || isApplyStatus)"
+            v-if="!(diffId || isApplyStatus || isSendStatus)"
             @click="deleteCurrentFile(item['id'], 'buisness')"
             class="md-icon-button clearBtn"
           >
@@ -169,7 +169,7 @@
             >{{ item["file_name"] }}</a
           >
           <md-button
-            v-if="!(diffId || isApplyStatus)"
+            v-if="!(diffId || isApplyStatus || isSendStatus)"
             @click="deleteFile(item['idx'], 'buisness')"
             class="md-icon-button clearBtn"
           >
@@ -183,7 +183,7 @@
           <label>계약서</label>
           <md-input :disabled="true" />
           <md-button
-            :disabled="diffId"
+            :disabled="diffId || isSendStatus || isApplyStatus"
             class="md-default md-dense  md-fileinput"
           >
             <template>찾아보기</template>
@@ -205,7 +205,7 @@
         >
           {{ item["name"] }}
           <md-button
-            v-if="!(diffId || isApplyStatus)"
+            v-if="!(diffId || isApplyStatus || isSendStatus)"
             @click="deleteCurrentFile(item['id'], 'contract')"
             class="md-icon-button clearBtn"
           >
@@ -226,7 +226,7 @@
           >{{ item["file_name"] }}</a
           >
           <md-button
-            v-if="!(diffId || isApplyStatus)"
+            v-if="!(diffId || isApplyStatus || isSendStatus)"
             @click="deleteFile(item['idx'], 'contract')"
             class="md-icon-button clearBtn"
           >
@@ -278,7 +278,7 @@
             반려
           </md-button>
         </div>
-        <div v-else-if="isReSendStatus && !isChiefAdmin && !diffId">
+        <div v-else-if="isReSendStatus && !diffId">
           <md-button
             :disabled="canSend"
             class="md-success md-dense"
