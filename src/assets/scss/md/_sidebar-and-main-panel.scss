@@ -650,6 +650,13 @@
 }
 
 @media (min-width: 991px) {
+  .main-panel{
+    > .content{
+      padding: 30px 15px;
+      min-height: calc(100vh - 123px);
+    }
+  }
+
     .sidebar-mini{
         .visible-on-sidebar-regular{
             display: none !important;

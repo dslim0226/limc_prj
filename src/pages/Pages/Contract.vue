@@ -15,6 +15,22 @@
               <md-field
                 class="md-layout-item md-xsmall-size-100 md-size-20 mr-5"
               >
+                <label for="filter">중간관리자</label>
+                <md-select v-model="contract_user_id">
+                  <md-option value="">
+                    전체
+                  </md-option>
+                  <md-option
+                    v-for="(item, index) in parentAdminList"
+                    :value="item.user_id"
+                    :key="index"
+                  >{{ `${item.user_nm}(${item.user_id})` }}
+                  </md-option>
+                </md-select>
+              </md-field>
+              <md-field
+                class="md-layout-item md-xsmall-size-100 md-size-20 mr-5"
+              >
                 <label for="filter">상태</label>
                 <md-select v-model="state">
                   <md-option value="">
@@ -146,6 +162,9 @@ export default {
 
     this.business_cd = role["data"]["data"]["rows"];
 
+    const { data } = await axiosInstance.get("/api/parent_user.php");
+    this.parentAdminList = data["data"]["rows"];
+
     this.loading = true;
     await this.loadData();
     this.loading = false;
@@ -159,9 +178,11 @@ export default {
         total: 50
       },
       tableData: [],
+      contract_user_id: "",
       state: "",
       text: "",
       search: {
+        contract_user_id: "",
         state: "",
         text: "",
         isSearching: false
@@ -169,7 +190,8 @@ export default {
       open: false,
       modalMode: "SAVE",
       loading: false,
-      business_cd: []
+      business_cd: [],
+      parentAdminList: []
     };
   },
   methods: {
@@ -188,6 +210,7 @@ export default {
       this.search.isSearching = this.state || this.text;
       this.search.state = this.state;
       this.search.text = this.text;
+      this.search.contract_user_id = this.contract_user_id;
       this.paging.page = 1;
       await this.loadData();
     },
@@ -206,7 +229,10 @@ export default {
         const param = {
           page: this.paging.page,
           limit: this.paging.limit,
-          state: ""
+          state: "",
+          contract_user_id: this.isChiefAdmin
+            ? this.search.contract_user_id
+            : this.userId
         };
 
         if (this.search.isSearching) {
