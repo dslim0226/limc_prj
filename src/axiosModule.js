@@ -14,7 +14,6 @@ const showAlert = (title, text, callback) => {
 // TODO : 최종 작업시 baseURL 없애기
 // accessToken 존재 하지 않으므로 user_id 나 user_level 이 존재할 경우 담아 보내기(없을 경우 로그인 해제?)
 export const axiosInstance = axios.create({
-  baseURL: "http://kokimin7805.cafe24.com",
   timeout: 60000,
   headers: {
     "Content-Type": "application/json",
