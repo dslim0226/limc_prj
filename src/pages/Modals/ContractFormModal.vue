@@ -4,7 +4,7 @@
       <h4 class="modal-title">계약 정보 {{ isSaveMode ? "등록" : "수정" }}</h4>
     </template>
 
-    <template slot="body" v-if="loading">
+    <template slot="body" v-if="infoLoading">
       <spinner />
     </template>
     <template slot="body" v-else>
@@ -110,13 +110,9 @@
           v-for="(item, index) in contract.files.menu"
           :key="index"
         >
-          <a
-            :href="
-              `/upload/menu/${item['file_temp_name']}`
-            "
-            target="_blank"
-            >{{ item["file_name"] }}</a
-          >
+          <a :href="`/upload/menu/${item['file_temp_name']}`" target="_blank">{{
+            item["file_name"]
+          }}</a>
           <md-button
             v-if="!(diffId || isApplyStatus || isSendStatus)"
             @click="deleteFile(item['idx'], 'menu')"
@@ -168,9 +164,7 @@
           :key="index"
         >
           <a
-            :href="
-              `/upload/buisness/${item['file_temp_name']}`
-            "
+            :href="`/upload/buisness/${item['file_temp_name']}`"
             target="_blank"
             >{{ item["file_name"] }}</a
           >
@@ -225,9 +219,7 @@
           :key="index"
         >
           <a
-            :href="
-              `/upload/contract/${item['file_temp_name']}`
-            "
+            :href="`/upload/contract/${item['file_temp_name']}`"
             target="_blank"
             >{{ item["file_name"] }}</a
           >
@@ -273,11 +265,15 @@
           </md-button>
         </div>
         <div v-if="(isSaveStatus || isSaveMode) && (!diffId || isSaveMode)">
-          <md-button @click="save('01')" class="md-primary md-dense">
+          <md-button
+            :disabled="loading"
+            @click="save('01')"
+            class="md-primary md-dense"
+          >
             중간저장
           </md-button>
           <md-button
-            :disabled="canSend"
+            :disabled="canSend || loading"
             @click="save('02')"
             class="md-success md-dense"
           >
@@ -285,16 +281,24 @@
           </md-button>
         </div>
         <div v-else-if="isSendStatus">
-          <md-button class="md-success md-dense" @click="apply">
+          <md-button
+            :disabled="loading"
+            class="md-success md-dense"
+            @click="apply"
+          >
             승인
           </md-button>
-          <md-button class="md-danger md-dense" @click="dis">
+          <md-button
+            :disabled="loading"
+            class="md-danger md-dense"
+            @click="dis"
+          >
             반려
           </md-button>
         </div>
         <div v-else-if="isReSendStatus && !diffId">
           <md-button
-            :disabled="canSend"
+            :disabled="canSend || loading"
             class="md-success md-dense"
             @click="save('02')"
           >
@@ -328,7 +332,7 @@ export default {
   watch: {
     id: async function(id) {
       if (id !== "-1") {
-        this.loading = true;
+        this.infoLoading = true;
 
         const { data } = await axiosInstance.get(`/api/contract_info.php`, {
           params: {
@@ -337,7 +341,7 @@ export default {
         });
 
         this.contract = { ...this.contract, ...data["data"], idx: id };
-        this.loading = false;
+        this.infoLoading = false;
       }
     }
   },
@@ -362,6 +366,7 @@ export default {
       file_del_list: []
     },
     picIdx: 0,
+    infoLoading: false,
     loading: false
   }),
   computed: {
@@ -457,6 +462,7 @@ export default {
       this.$emit("close", refresh);
     },
     async save(state) {
+      this.loading = true;
       const ct = this.contract;
 
       const body = {
@@ -518,6 +524,8 @@ export default {
           "계약 정보 저장중 오류가 발생했습니다.",
           () => {}
         );
+      } finally {
+        this.loading = false;
       }
     },
     kakaoMap() {
@@ -575,6 +583,7 @@ export default {
       ];
     },
     async apply() {
+      this.loading = true;
       Swal.fire({
         title: "해당 계약건을 승인하시겠습니까?",
         showCancelButton: true,
@@ -604,11 +613,14 @@ export default {
               "해당 계약건 승인중 오류가 발생했습니다.",
               () => {}
             );
+          } finally {
+            this.loading = false;
           }
         }
       });
     },
     async dis() {
+      this.loading = true;
       Swal.fire({
         title: `반려사유를 작성해주세요.`,
         input: "textarea",
@@ -640,6 +652,8 @@ export default {
               "해당 계약건 반려 중 오류가 발생했습니다.",
               () => {}
             );
+          } finally {
+            this.loading = false;
           }
         }
       });

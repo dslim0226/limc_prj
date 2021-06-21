@@ -4,7 +4,7 @@
       <h4 class="modal-title">회원 정보 {{ isSaveMode ? "등록" : "수정" }}</h4>
     </template>
 
-    <template slot="body" v-if="loading">
+    <template slot="body" v-if="infoLoading">
       <spinner />
     </template>
     <template slot="body" v-else>
@@ -22,7 +22,7 @@
           <md-button
             v-if="isSaveMode"
             class="md-primary md-dense md-button-pc"
-            :disabled="isIdCheck"
+            :disabled="(!idCheck && user.user_id.length < 4) || idCheck"
             @click="check"
           >
             <span>중복 검사</span>
@@ -81,7 +81,10 @@
       <div class="md-layout" v-if="isChiefAdmin && checkMiddleAdminInForm">
         <md-field>
           <label>담당자</label>
-          <md-select v-model="user.parent_user" :disabled="!isSaveMode && !isChiefAdmin">
+          <md-select
+            v-model="user.parent_user"
+            :disabled="!isSaveMode && !isChiefAdmin"
+          >
             <md-option
               v-for="(item, index) in parentAdminList"
               :value="item.user_id"
@@ -108,15 +111,15 @@
           </md-button>
         </div>
         <div>
-          <!--          <md-button-->
-          <!--            class="md-danger md-dense"-->
-          <!--            v-if="!isSaveMode && isChiefAdmin"-->
-          <!--            @click="deleteUser"-->
-          <!--          >삭제-->
-          <!--          </md-button>-->
+          <md-button
+            class="md-danger md-dense"
+            v-if="!isSaveMode && isChiefAdmin"
+            @click="deleteUser"
+            >삭제
+          </md-button>
           <md-button
             class="md-success md-dense"
-            :disabled="!validateCreate"
+            :disabled="!validateCreate || loading"
             v-if="isSaveMode"
             @click="createUser"
             >생성
@@ -177,7 +180,9 @@ export default {
       return this.user.user_level === userRole.GENERAL_USER;
     },
     isIdCheck() {
-      return this.idCheck || !/^[!A-Za-z0-9]{4,}$/.test(this.user.user_id);
+      console.log(this.idCheck);
+      console.log(/^[!A-Za-z0-9]{4,}$/.test(this.user.user_id));
+      return this.idCheck && /^[!A-Za-z0-9]{4,}$/.test(this.user.user_id);
     },
     checkPassword() {
       const pw = this.user.password;
@@ -219,7 +224,7 @@ export default {
     id: async function(id) {
       this.init();
       if (!this.isSaveMode) {
-        this.loading = true;
+        this.infoLoading = true;
 
         const { data } = await axiosInstance.get(`/api/sy_user_info.php`, {
           params: {
@@ -231,7 +236,7 @@ export default {
         this.backup.user_nm = data["data"]["user_nm"];
         this.backup.user_hp = data["data"]["user_hp"];
         this.backup.parent_user = data["data"]["parent_user"];
-        this.loading = false;
+        this.infoLoading = false;
       } else {
         this.init();
       }
@@ -240,7 +245,7 @@ export default {
       this.idCheck = false;
     },
     open: async function(open) {
-      if(open) {
+      if (open) {
         const { data } = await axiosInstance.get("/api/parent_user.php");
         this.parentAdminList = data["data"]["rows"];
       }
@@ -266,6 +271,7 @@ export default {
     },
     parentAdminList: [],
     idCheck: false,
+    infoLoading: false,
     loading: false
   }),
   methods: {
@@ -317,6 +323,7 @@ export default {
       }
     },
     async createUser() {
+      this.loading = true;
       const body = {
         mode: "ADD",
         login_level: this.userLevel,
@@ -358,43 +365,49 @@ export default {
           "회원 정보 생성 중 오류가 발생했습니다.",
           () => {}
         );
+      } finally {
+        this.loading = false;
       }
     },
-    // async deleteUser() {
-    //   Swal.fire({
-    //     title: "해당 유저를 삭제하시겠습니까?",
-    //     showCancelButton: true,
-    //     confirmButtonText: `삭제`,
-    //     cancelButtonText: `취소`
-    //   }).then(async ({ value }) => {
-    //     if (value) {
-    //       try {
-    //         const body = {
-    //           mode: "DEL",
-    //           login_level: this.userLevel,
-    //           login_id: this.userId,
-    //           ...this.user
-    //         };
-    //         await axiosInstance.post("/api/sy_user_action.php", body);
-    //
-    //         this.showAlert(
-    //           "success",
-    //           "삭제 완료",
-    //           "회원 정보가 삭제되었습니다!",
-    //           this.close(true)
-    //         );
-    //       } catch (e) {
-    //         this.showAlert(
-    //           "error",
-    //           "삭제 실패",
-    //           "회원 정보 삭제 중 오류가 발생했습니다.",
-    //           () => {
-    //           }
-    //         );
-    //       }
-    //     }
-    //   });
-    // },
+    async deleteUser() {
+      this.loading = true;
+
+      Swal.fire({
+        title: "해당 유저를 삭제하시겠습니까?",
+        showCancelButton: true,
+        confirmButtonText: `삭제`,
+        cancelButtonText: `취소`
+      }).then(async ({ value }) => {
+        if (value) {
+          try {
+            const body = {
+              mode: "DEL",
+              login_level: this.userLevel,
+              login_id: this.userId,
+              ...this.user
+            };
+            await axiosInstance.post("/api/sy_user_action.php", body);
+
+            this.showAlert(
+              "success",
+              "삭제 완료",
+              "회원 정보가 삭제되었습니다!",
+              this.close(true)
+            );
+          } catch (e) {
+            this.showAlert(
+              "error",
+              "삭제 실패",
+              "회원 정보 삭제 중 오류가 발생했습니다.",
+              () => {}
+            );
+          } finally {
+            this.loading = false;
+          }
+        }
+      });
+      this.loading = false;
+    },
     init() {
       this.user = {
         user_id: "",
@@ -477,7 +490,7 @@ export default {
   display: none;
 }
 .md-layout {
-  margin-bottom:1em;
+  margin-bottom: 1em;
 }
 
 @media screen and (max-width: 992px) {
