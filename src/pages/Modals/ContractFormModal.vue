@@ -112,7 +112,7 @@
         >
           <a
             :href="
-              `http://kokimin7805.cafe24.com/upload/menu/${item['file_temp_name']}`
+              `/upload/menu/${item['file_temp_name']}`
             "
             target="_blank"
             >{{ item["file_name"] }}</a
@@ -169,7 +169,7 @@
         >
           <a
             :href="
-              `http://kokimin7805.cafe24.com/upload/buisness/${item['file_temp_name']}`
+              `/upload/buisness/${item['file_temp_name']}`
             "
             target="_blank"
             >{{ item["file_name"] }}</a
@@ -226,7 +226,7 @@
         >
           <a
             :href="
-              `http://kokimin7805.cafe24.com/upload/contract/${item['file_temp_name']}`
+              `/upload/contract/${item['file_temp_name']}`
             "
             target="_blank"
             >{{ item["file_name"] }}</a
@@ -665,7 +665,7 @@ export default {
       }).then(async ({ value }) => {
         if (value) {
           try {
-            //http://kokimin7805.cafe24.com/api/contract_del.php?idx=21&login_id=kokimin
+            ///api/contract_del.php?idx=21&login_id=kokimin
             await axiosInstance.get("/api/contract_del.php", {
               params: {
                 idx: this.contract.idx

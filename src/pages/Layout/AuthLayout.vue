@@ -2,19 +2,13 @@
   <div
     class="full-page"
     style="background-color: #EEEEEE!important"
-    :class="{ 'nav-open': $sidebar.showSidebar }"
   >
     <md-toolbar md-elevation="0" class="md-transparent md-toolbar-absolute">
     </md-toolbar>
     <div class="wrapper wrapper-full-page" @click="toggleSidebarPage">
       <div class="page-header header-filter" filter-color="black">
         <div class="container md-offset">
-          <zoom-center-transition
-            :duration="pageTransitionDuration"
-            mode="out-in"
-          >
-            <Login />
-          </zoom-center-transition>
+          <Login />
         </div>
       </div>
     </div>

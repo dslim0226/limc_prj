@@ -260,7 +260,7 @@ export default {
     },
     async excelDownload() {
       window.open(
-        `http://kokimin7805.cafe24.com/api/contract_excel.php?state=${this.state}&search_nm=${this.text}&login_id=${this.userId}&login_level=${this.userLevel}`
+        `/api/contract_excel.php?state=${this.state}&search_nm=${this.text}&login_id=${this.userId}&login_level=${this.userLevel}`
       );
     }
   }
